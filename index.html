@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>เช็คทุเรียนสุก - SME ไทย</title>
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<style>
+  :root {
+    --green: #6b8e23;
+    --green-dark: #556b1d;
+    --yellow: #f4c430;
+    --yellow-dark: #d4a017;
+    --brown: #8b4513;
+    --bg: #fffaf0;
+    --card: #ffffff;
+    --text: #2d2d2d;
+    --muted: #6b6b6b;
+    --red: #c0392b;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: 'Sarabun', 'Prompt', 'Noto Sans Thai', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 18px;
+    line-height: 1.5;
+  }
+  body { min-height: 100vh; display: flex; flex-direction: column; }
+  header {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-dark) 100%);
+    color: white;
+    padding: 16px 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+  header .sub { font-size: 14px; opacity: 0.9; margin-top: 4px; }
+  main { flex: 1; padding: 16px; max-width: 640px; margin: 0 auto; width: 100%; }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .step-label {
+    display: inline-block;
+    background: var(--yellow);
+    color: var(--brown);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  h2 { margin: 0 0 8px; font-size: 22px; color: var(--green-dark); }
+  p.hint { color: var(--muted); margin: 4px 0 16px; font-size: 16px; }
+  button.big {
+    width: 100%;
+    padding: 18px;
+    font-size: 20px;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    background: var(--green);
+    color: white;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.1s;
+  }
+  button.big:active { transform: scale(0.98); }
+  button.big:disabled { background: #ccc; cursor: not-allowed; }
+  button.yellow { background: var(--yellow); color: var(--brown); }
+  button.yellow:disabled { background: #ddd; color: #999; }
+  button.gray { background: #888; }
+  button.row { display: flex; gap: 10px; }
+  button.row > button { flex: 1; }
+  .preview {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  video, canvas.snap {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+  }
+  .cam-overlay {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .cam-hint {
+    position: absolute; left: 8px; right: 8px; bottom: 8px;
+    background: rgba(0,0,0,0.65); color: #fff;
+    padding: 8px 12px; border-radius: 8px;
+    text-align: center; font-size: 14px; line-height: 1.3;
+  }
+  .cam-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: var(--yellow); color: var(--brown);
+    padding: 6px 12px; border-radius: 20px;
+    font-weight: 700; font-size: 14px;
+  }
+  .progress-dots {
+    display: flex; justify-content: center; gap: 10px;
+    margin: 0 0 14px;
+  }
+  .progress-dot {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: #e0e0e0; color: #888;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+    border: 2px solid transparent;
+  }
+  .progress-dot.active { background: var(--yellow); color: var(--brown); border-color: var(--yellow-dark); transform: scale(1.1); }
+  .progress-dot.done { background: var(--green); color: white; }
+  .progress-dot.done::after { content: '✓'; }
+  .progress-dot.done span { display: none; }
+  .photo-thumb {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 3px solid var(--green);
+  }
+  .photo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 12px;
+  }
+  .photo-grid figure {
+    margin: 0; text-align: center;
+  }
+  .photo-grid img {
+    width: 100%; aspect-ratio: 1; object-fit: cover;
+    border-radius: 8px; border: 2px solid var(--green);
+  }
+  .photo-grid figcaption {
+    font-size: 12px; color: var(--muted); margin-top: 4px;
+  }
+  .mic-circle {
+    width: 160px; height: 160px;
+    margin: 16px auto;
+    border-radius: 50%;
+    background: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 60px;
+    box-shadow: 0 0 0 0 rgba(192,57,43,0.5);
+    cursor: pointer;
+    user-select: none;
+  }
+  .mic-circle.recording {
+    animation: pulse 1.2s infinite;
+    background: #e74c3c;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(192,57,43,0.6); }
+    70% { box-shadow: 0 0 0 30px rgba(192,57,43,0); }
+    100% { box-shadow: 0 0 0 0 rgba(192,57,43,0); }
+  }
+  .mic-status { text-align: center; font-size: 18px; color: var(--muted); margin-bottom: 12px; }
+  .maturity-panel {
+    border-radius: 12px;
+    padding: 14px;
+    margin: 12px 0 6px;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .maturity-panel.young { background: #fde2e2; border-color: var(--red); color: #6e1a14; }
+  .maturity-panel.medium { background: #fff4d6; border-color: var(--yellow-dark); color: var(--brown); }
+  .maturity-panel.mature { background: #e8f5d9; border-color: var(--green-dark); color: var(--green-dark); }
+  .maturity-emoji { font-size: 42px; line-height: 1; }
+  .maturity-title { font-size: 18px; font-weight: 800; margin: 0; }
+  .maturity-desc { font-size: 14px; margin: 2px 0 0; opacity: 0.9; }
+  .timeline {
+    position: relative;
+    padding-left: 12px;
+    margin: 8px 0 0;
+  }
+  .tl-item {
+    position: relative;
+    padding: 14px 14px 14px 48px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    border: 2px solid;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: 16px; top: 22px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid currentColor;
+    z-index: 2;
+  }
+  .tl-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 24px; top: 40px;
+    bottom: -14px;
+    width: 4px;
+    background: #ddd;
+    z-index: 1;
+  }
+  .tl-item.passed { opacity: 0.55; background: #f0f0f0; border-color: #aaa; color: #666; }
+  .tl-item.passed::before { background: #aaa; border-color: #888; }
+  .tl-item.unreach { background: #fde2e2; border-color: var(--red); color: #6e1a14; opacity: 0.85; }
+  .tl-item.unreach::before { background: var(--red); border-color: #6e1a14; }
+  .tl-item.today { background: #fff8dc; border-color: var(--yellow-dark); color: var(--brown); box-shadow: 0 4px 12px rgba(212,160,23,0.25); }
+  .tl-item.today::before { background: var(--yellow); border-color: var(--yellow-dark); }
+  .tl-item.future-1 { background: #f0f8e8; border-color: var(--green); color: var(--green-dark); }
+  .tl-item.future-2 { background: #fff8dc; border-color: var(--yellow-dark); color: var(--brown); }
+  .tl-item.future-3 { background: #ffe8d6; border-color: var(--brown); color: var(--brown); }
+  .tl-title { font-size: 18px; font-weight: 700; margin: 0; }
+  .tl-desc { font-size: 14px; opacity: 0.85; margin: 4px 0; }
+  .tl-date { font-size: 18px; font-weight: 800; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .tl-emoji { font-size: 28px; position: absolute; right: 14px; top: 14px; }
+  .tl-status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; margin-left: 6px; background: rgba(0,0,0,0.08); }
+  .tl-status.now { background: var(--red); color: white; }
+  .level-emoji { font-size: 48px; }
+  .level-title { font-size: 22px; font-weight: 700; margin: 4px 0; }
+  .level-desc { font-size: 16px; color: var(--muted); }
+  .level-date { font-size: 18px; font-weight: 700; color: var(--green-dark); margin-top: 8px; }
+  .row-flex { display: flex; align-items: center; gap: 16px; }
+  .confidence {
+    background: #eee; border-radius: 20px; overflow: hidden;
+    height: 24px; margin: 8px 0;
+  }
+  .confidence-bar {
+    height: 100%; background: linear-gradient(90deg, var(--green), var(--yellow));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 14px;
+    transition: width 0.5s;
+  }
+  .hidden { display: none !important; }
+  /* Sticker label - sized for thermal sticker printer (~60x90mm) */
+  .label-print {
+    border: 2px dashed #999;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: white;
+    width: 220px;
+    margin: 0 auto;
+    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+    color: #000;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+  .label-print .lbl-head {
+    text-align: center;
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+  }
+  .label-print .lbl-head h3 { margin: 0; font-size: 14px; font-weight: 800; color: #000; }
+  .label-print .lbl-head .sub { font-size: 10px; color: #555; }
+  .label-print .lbl-ripe {
+    text-align: center;
+    background: #fff8dc;
+    border: 1px solid #d4a017;
+    border-radius: 4px;
+    padding: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .label-print .lbl-checked-line {
+    font-size: 10px;
+    font-weight: 600;
+    color: #555;
+    margin-top: 2px;
+  }
+  .label-print .lbl-checked-line b { color: #000; }
+  .label-print .lbl-mat-line {
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 2px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    display: inline-block;
+  }
+  .label-print .lbl-mat-line.young { background: #fde2e2; color: #6e1a14; border: 1px solid #c0392b; }
+  .label-print .lbl-mat-line.medium { background: #fff4d6; color: #8b4513; border: 1px solid #d4a017; }
+  .label-print .lbl-mat-line.mature { background: #e8f5d9; color: #556b1d; border: 1px solid #6b8e23; }
+  .label-print .lbl-levels { margin: 4px 0; }
+  .label-print .lbl-lv {
+    display: grid;
+    grid-template-columns: 16px 1fr 70px;
+    gap: 4px;
+    align-items: center;
+    padding: 3px 4px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    font-size: 10.5px;
+    border: 1px solid;
+  }
+  .label-print .lbl-lv.lv1 { background: #f0f8e8; border-color: #6b8e23; }
+  .label-print .lbl-lv.lv2 { background: #fff8dc; border-color: #d4a017; }
+  .label-print .lbl-lv.lv3 { background: #ffe8d6; border-color: #8b4513; }
+  .label-print .lbl-lv.passed { background: #f0f0f0; border-color: #aaa; text-decoration: line-through; color: #888; }
+  .label-print .lbl-lv .lv-num { font-weight: 800; text-align: center; }
+  .label-print .lbl-lv .lv-name { font-size: 10px; font-weight: 700; }
+  .label-print .lbl-lv .lv-date { text-align: right; font-weight: 800; font-size: 11px; }
+  .label-print .lbl-foot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px dashed #999;
+    text-align: center;
+  }
+  .label-print .lbl-foot .qr { margin: 0 auto; }
+  .label-print .lbl-foot .qr canvas, .label-print .lbl-foot .qr img {
+    display: block; width: 70px !important; height: 70px !important; margin: 0 auto;
+  }
+  .label-print .lbl-foot .meta { font-size: 9px; color: #555; line-height: 1.3; }
+  .label-print .lbl-foot .meta b { color: #000; font-size: 10px; }
+  .footer-nav { display: flex; gap: 10px; margin-top: 16px; }
+  .footer-nav button { flex: 1; }
+  .err { color: var(--red); background: #fde; padding: 12px; border-radius: 8px; margin: 8px 0; }
+  .audio-viz {
+    width: 100%; height: 80px; background: #f0f0f0; border-radius: 8px;
+    margin: 8px 0; overflow: hidden;
+  }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  .scores { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  /* Print styles - small sticker format */
+  @media print {
+    body { background: white; margin: 0; }
+    header, main > .card:not(.label-card), .footer-nav, .no-print { display: none !important; }
+    main { padding: 0; max-width: none; }
+    .label-card { box-shadow: none; padding: 0; margin: 0; border-radius: 0; background: white; }
+    .label-print {
+      border: 1px solid #000;
+      page-break-inside: avoid;
+      width: 60mm !important;
+      margin: 0 !important;
+      padding: 2mm !important;
+      font-size: 9px !important;
+    }
+    .label-print .lbl-head h3 { font-size: 11px !important; }
+    .label-print .lbl-foot .qr canvas, .label-print .lbl-foot .qr img {
+      width: 18mm !important; height: 18mm !important;
+    }
+    @page { size: 60mm 90mm; margin: 2mm; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🥭 เช็คทุเรียนสุก</h1>
+  <div class="sub">เครื่องมือสำหรับพ่อค้าแม่ค้าตลาด</div>
+</header>
+
+<main>
+  <!-- Step 0: Home -->
+  <section id="step-home" class="card">
+    <span class="step-label">เริ่มต้น</span>
+    <h2>ตรวจทุเรียนของคุณ</h2>
+    <p class="hint">ใช้กล้องถ่ายเปลือกทุเรียน + เคาะฟังเสียง ระบบจะบอกระดับความสุกและวันที่ควรทาน</p>
+    <button class="big" onclick="goStep('camera')">▶ เริ่มตรวจทุเรียน</button>
+    <details>
+      <summary>วิธีใช้งาน</summary>
+      <ol>
+        <li>กดปุ่มเริ่ม แล้วถ่ายภาพเปลือกทุเรียนให้ชัด</li>
+        <li>กดปุ่มไมค์แล้วเคาะทุเรียน 3-5 ครั้ง</li>
+        <li>ระบบประเมินระดับความสุก 3 ระดับ</li>
+        <li>พิมพ์สติกเกอร์แปะที่ผลทุเรียนได้เลย</li>
+      </ol>
+    </details>
+  </section>
+
+  <!-- Step 1: Camera (cycles 3 times: stem, body, bottom) -->
+  <section id="step-camera" class="card hidden">
+    <span class="step-label" id="cam-step-label">ภาพ 1/3</span>
+    <h2 id="cam-title">📷 ถ่ายภาพ</h2>
+    <p class="hint" id="cam-tip"></p>
+    <div class="progress-dots" id="progress-dots">
+      <div class="progress-dot" data-i="0"><span>1</span></div>
+      <div class="progress-dot" data-i="1"><span>2</span></div>
+      <div class="progress-dot" data-i="2"><span>3</span></div>
+    </div>
+    <div class="preview">
+      <video id="cam-video" autoplay playsinline muted></video>
+      <svg id="cam-overlay" class="cam-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+      <div class="cam-badge" id="cam-badge">🌱 ขั้ว</div>
+      <div class="cam-hint" id="cam-hint">วางขั้วทุเรียนในกรอบสีเหลือง</div>
+    </div>
+    <canvas id="cam-canvas" class="snap hidden"></canvas>
+    <div id="cam-err" class="err hidden"></div>
+    <div class="row" style="display:flex; gap:10px;">
+      <button class="big gray" onclick="goStep('home')">◀ กลับ</button>
+      <button class="big" id="btn-snap" onclick="snapPhoto()">📸 ถ่าย</button>
+    </div>
+  </section>
+
+  <!-- Step 1b: Photo confirm -->
+  <section id="step-photo-confirm" class="card hidden">
+    <span class="step-label" id="confirm-step-label">ภาพ 1/3</span>
+    <h2 id="confirm-title">ภาพชัดไหม?</h2>
+    <img id="photo-thumb" class="photo-thumb" alt="photo">
+    <div class="row" style="display:flex; gap:10px;">
+      <button class="big gray" onclick="retakePhoto()">🔄 ถ่ายใหม่</button>
+      <button class="big" id="btn-next-photo" onclick="nextPhoto()">▶ ถัดไป</button>
+    </div>
+  </section>
+
+  <!-- Step 2: Mic -->
+  <section id="step-mic" class="card hidden">
+    <span class="step-label">ขั้นตอน 2/3</span>
+    <h2>🔊 เคาะฟังเสียง</h2>
+    <p class="hint">กดปุ่มไมค์ค้างไว้ แล้วเคาะทุเรียนด้วยปลายไม้ 3-5 ครั้ง ปล่อยเมื่อเสร็จ</p>
+    <div id="mic-circle" class="mic-circle">🎙️</div>
+    <div id="mic-status" class="mic-status">กดค้างเพื่อบันทึก</div>
+    <canvas id="audio-viz" class="audio-viz"></canvas>
+    <div id="mic-err" class="err hidden"></div>
+    <div class="row" style="display:flex; gap:10px;">
+      <button class="big gray" onclick="goStep('photo-confirm')">◀ กลับ</button>
+      <button class="big yellow" id="btn-analyze" onclick="analyze()" disabled>✓ วิเคราะห์ผล</button>
+    </div>
+  </section>
+
+  <!-- Step 3: Result (Timeline) -->
+  <section id="step-result" class="card hidden">
+    <span class="step-label">ผลการตรวจ</span>
+    <h2>🥭 ความสุกตอนนี้</h2>
+    <div class="confidence">
+      <div id="conf-bar" class="confidence-bar" style="width:0%">0%</div>
+    </div>
+    <p class="hint" id="ripeness-summary"></p>
+
+    <div id="maturity-panel" class="maturity-panel"></div>
+
+    <h3 style="margin: 18px 0 8px; color: var(--green-dark);">📅 ตารางวันที่ทาน</h3>
+    <p class="hint" style="margin-top:0;">ทุเรียนลูกนี้จะถึงแต่ละระดับตามลำดับ ลูกค้าเลือกทานช่วงไหนได้ตามชอบ</p>
+    <div class="timeline" id="timeline"></div>
+
+    <div class="scores" id="scores"></div>
+
+    <div class="footer-nav">
+      <button class="big gray" onclick="restart()">🔄 ตรวจลูกใหม่</button>
+      <button class="big" onclick="goStep('label')">🏷️ พิมพ์สติกเกอร์</button>
+    </div>
+  </section>
+
+  <!-- Step 4: Label (small sticker for durian) -->
+  <section id="step-label" class="card label-card hidden">
+    <span class="step-label no-print">พร้อมพิมพ์ - ขนาดสติกเกอร์เล็ก</span>
+    <p class="hint no-print">สติกเกอร์ขนาดประมาณ 60×90mm แปะที่ก้านทุเรียน — แสดงทั้ง 3 ระดับให้ลูกค้าเลือกวันที่จะกินเอง</p>
+    <div class="label-print" id="label-content">
+      <div class="lbl-head">
+        <h3>🥭 ทุเรียน — ตารางทาน</h3>
+        <div class="sub">Durian Eat-Schedule</div>
+      </div>
+      <div class="lbl-ripe">
+        <div id="lbl-ripe">ความสุกตอนนี้: -</div>
+        <div id="lbl-maturity" class="lbl-mat-line">ความแก่: -</div>
+        <div class="lbl-checked-line"><b>ตรวจ:</b> <span id="lbl-checked"></span></div>
+      </div>
+      <div class="lbl-levels" id="lbl-levels"></div>
+      <div class="lbl-foot">
+        <div class="qr" id="qr"></div>
+        <div class="meta">
+          <div>เก็บแห้ง อากาศถ่ายเท</div>
+          <div>SME Thai • Durian Check</div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-nav no-print">
+      <button class="big gray" onclick="goStep('result')">◀ กลับ</button>
+      <button class="big yellow" onclick="window.print()">🖨️ พิมพ์</button>
+    </div>
+  </section>
+</main>
+
+<script>
+window.addEventListener('error', function(e) {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#c0392b;color:white;padding:12px;font-size:14px;z-index:9999;';
+  box.textContent = '⚠️ JS Error: ' + e.message + ' @ line ' + e.lineno;
+  document.body.appendChild(box);
+});
+
+/* ============ State ============ */
+const PHOTO_STEPS = [
+  {
+    key: 'stem',
+    badge: '🌱 ขั้ว',
+    title: '📷 ถ่ายขั้ว (ก้าน) ทุเรียน',
+    tip: 'ขั้วน้ำตาลแห้ง = สุก / ขั้วเขียวสด = ดิบ จุดที่สำคัญที่สุด',
+    hint: 'วางขั้วทุเรียนให้อยู่ในกรอบสีเหลือง',
+    weight: 0.45,
+    drawFrame: drawStemFrame,
+  },
+  {
+    key: 'body',
+    badge: '🥭 เปลือก',
+    title: '📷 ถ่ายเปลือกด้านข้าง',
+    tip: 'ดูสีเปลือกและปลายหนาม ปลายหนามน้ำตาล + เปลือกเหลืองอมน้ำตาล = สุก',
+    hint: 'ถ่ายให้เห็นทั้งลูกในกรอบ',
+    weight: 0.35,
+    drawFrame: drawBodyFrame,
+  },
+  {
+    key: 'bottom',
+    badge: '⭐ ก้น',
+    title: '📷 ถ่ายก้นทุเรียน',
+    tip: 'ดูร่อง/รอยแยกระหว่างพู มีรอยแยกชัด = พร้อมแกะ',
+    hint: 'หงายลูกขึ้น ให้เห็นก้นกลางกรอบ',
+    weight: 0.20,
+    drawFrame: drawBottomFrame,
+  },
+];
+
+const state = {
+  photoStep: 0,                                              // 0..2
+  photos: { stem: null, body: null, bottom: null },          // dataURL each
+  photoAnalyses: { stem: null, body: null, bottom: null },   // score per part
+  audioAnalysis: null,
+  selectedLevel: null,
+  recording: false,
+  mediaRecorder: null,
+  audioCtx: null,
+  audioChunks: [],
+};
+
+/* ============ Navigation ============ */
+const STEPS = ['home','camera','photo-confirm','mic','result','label'];
+function goStep(name) {
+  STEPS.forEach(s => {
+    const el = document.getElementById('step-'+s);
+    if (el) el.classList.toggle('hidden', s !== name);
+  });
+  // Setup logic per step
+  if (name === 'camera') { startCamera(); renderPhotoStepUI(); }
+  else stopCamera();
+  if (name === 'photo-confirm') renderConfirmUI();
+  if (name === 'mic') setupMic();
+  if (name === 'result') renderResult();
+  if (name === 'label') renderLabel();
+  window.scrollTo(0,0);
+}
+
+function restart() {
+  state.photoStep = 0;
+  state.photos = { stem: null, body: null, bottom: null };
+  state.photoAnalyses = { stem: null, body: null, bottom: null };
+  state.audioAnalysis = null;
+  state.selectedLevel = null;
+  goStep('home');
+}
+
+/* ============ Multi-photo flow ============ */
+function renderPhotoStepUI() {
+  const i = state.photoStep;
+  const step = PHOTO_STEPS[i];
+  document.getElementById('cam-step-label').textContent = 'ภาพ ' + (i+1) + '/3';
+  document.getElementById('cam-title').textContent = step.title;
+  document.getElementById('cam-tip').textContent = step.tip;
+  document.getElementById('cam-badge').textContent = step.badge;
+  document.getElementById('cam-hint').textContent = step.hint;
+  // Progress dots
+  document.querySelectorAll('#progress-dots .progress-dot').forEach((dot, idx) => {
+    dot.classList.remove('active', 'done');
+    if (idx < i) dot.classList.add('done');
+    else if (idx === i) dot.classList.add('active');
+  });
+  // Draw frame overlay
+  const svg = document.getElementById('cam-overlay');
+  svg.innerHTML = '';
+  step.drawFrame(svg);
+}
+
+function renderConfirmUI() {
+  const i = state.photoStep;
+  const step = PHOTO_STEPS[i];
+  document.getElementById('confirm-step-label').textContent = 'ภาพ ' + (i+1) + '/3 - ' + step.badge;
+  document.getElementById('confirm-title').textContent = i < 2 ? 'ภาพชัดไหม? (ต่อภาพถัดไป)' : 'ภาพชัดไหม? (เสร็จแล้ว)';
+  const btn = document.getElementById('btn-next-photo');
+  btn.textContent = i < 2 ? '▶ ถัดไป (ภาพ ' + (i+2) + '/3)' : '▶ ไปต่อ (เคาะเสียง)';
+}
+
+function retakePhoto() {
+  goStep('camera');
+}
+
+function nextPhoto() {
+  if (state.photoStep < 2) {
+    state.photoStep++;
+    goStep('camera');
+  } else {
+    goStep('mic');
+  }
+}
+
+/* ============ SVG Frame overlays (viewBox 0 0 100 100) ============ */
+function svgEl(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function drawStemFrame(svg) {
+  // Durian body outline (bottom oval) + stem rectangle pointing up + corner brackets
+  const common = { fill: 'none', stroke: '#f4c430', 'stroke-width': '0.7', 'stroke-dasharray': '2.5,1.5' };
+  svg.appendChild(svgEl('ellipse', { cx: 50, cy: 60, rx: 28, ry: 28, ...common }));
+  svg.appendChild(svgEl('rect', { x: 46, y: 18, width: 8, height: 18, rx: 1.5, ...common }));
+  // Arrow pointing to stem
+  const arrow = svgEl('path', { d: 'M 30 22 L 42 25', stroke: '#f4c430', 'stroke-width': '1', fill: 'none', 'marker-end': '' });
+  svg.appendChild(arrow);
+  // Corner brackets
+  drawCornerBrackets(svg);
+}
+
+function drawBodyFrame(svg) {
+  const common = { fill: 'none', stroke: '#f4c430', 'stroke-width': '0.7', 'stroke-dasharray': '2.5,1.5' };
+  // Full durian oval + small stem on top
+  svg.appendChild(svgEl('ellipse', { cx: 50, cy: 55, rx: 32, ry: 36, ...common }));
+  svg.appendChild(svgEl('rect', { x: 47, y: 14, width: 6, height: 8, ...common }));
+  // Spikes hint - small triangles on sides
+  const spikePath = 'M 18 50 l -3 -2 l 3 -2 M 82 50 l 3 -2 l -3 -2 M 50 19 l -2 -3 l -2 3 M 50 91 l -2 3 l -2 -3';
+  svg.appendChild(svgEl('path', { d: spikePath, stroke: '#f4c430', 'stroke-width': '0.6', fill: 'none' }));
+  drawCornerBrackets(svg);
+}
+
+function drawBottomFrame(svg) {
+  const common = { fill: 'none', stroke: '#f4c430', 'stroke-width': '0.7', 'stroke-dasharray': '2.5,1.5' };
+  // Circle (bottom view) with 5 suture lines forming a star
+  svg.appendChild(svgEl('circle', { cx: 50, cy: 50, r: 28, ...common }));
+  // 5 segment lines
+  for (let k=0; k<5; k++) {
+    const a = (k * 72 - 90) * Math.PI / 180;
+    const x = 50 + Math.cos(a) * 28;
+    const y = 50 + Math.sin(a) * 28;
+    svg.appendChild(svgEl('line', { x1: 50, y1: 50, x2: x, y2: y, stroke: '#f4c430', 'stroke-width': '0.7', 'stroke-dasharray': '2.5,1.5' }));
+  }
+  // Center dot
+  svg.appendChild(svgEl('circle', { cx: 50, cy: 50, r: 1.5, fill: '#f4c430' }));
+  drawCornerBrackets(svg);
+}
+
+function drawCornerBrackets(svg) {
+  // 4 corner brackets like camera viewfinder
+  const corners = [
+    'M 5 12 L 5 5 L 12 5',
+    'M 88 5 L 95 5 L 95 12',
+    'M 95 88 L 95 95 L 88 95',
+    'M 12 95 L 5 95 L 5 88',
+  ];
+  corners.forEach(d => svg.appendChild(svgEl('path', { d, stroke: '#fff', 'stroke-width': '0.8', fill: 'none', opacity: '0.8' })));
+}
+
+/* ============ Camera ============ */
+let camStream = null;
+async function startCamera() {
+  const video = document.getElementById('cam-video');
+  const errEl = document.getElementById('cam-err');
+  errEl.classList.add('hidden');
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } },
+      audio: false
+    });
+    video.srcObject = camStream;
+  } catch (e) {
+    errEl.textContent = '❌ เปิดกล้องไม่ได้: ' + (e.message || e.name) + ' (อนุญาตกล้องในเบราว์เซอร์ก่อน)';
+    errEl.classList.remove('hidden');
+  }
+}
+function stopCamera() {
+  if (camStream) {
+    camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+  }
+}
+
+function snapPhoto() {
+  const video = document.getElementById('cam-video');
+  const canvas = document.getElementById('cam-canvas');
+  if (!video.videoWidth) return;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  const key = PHOTO_STEPS[state.photoStep].key;
+  state.photos[key] = dataUrl;
+  state.photoAnalyses[key] = analyzePhotoColor(ctx, canvas.width, canvas.height);
+  document.getElementById('photo-thumb').src = dataUrl;
+  goStep('photo-confirm');
+}
+
+/* ============ Photo Heuristic ============ */
+// Sample colors from the center area of image
+// Greener / less saturated yellow => less ripe
+// Browner / darker yellow / brown spots => riper
+function analyzePhotoColor(ctx, width, height) {
+  const cx = Math.floor(width*0.25), cy = Math.floor(height*0.25);
+  const cw = Math.floor(width*0.5), ch = Math.floor(height*0.5);
+  const data = ctx.getImageData(cx, cy, cw, ch).data;
+  let r=0,g=0,b=0,n=0;
+  let brownPixels = 0;
+  for (let i=0;i<data.length;i+=16) { // sample every 4 pixels
+    const R=data[i], G=data[i+1], B=data[i+2];
+    r+=R; g+=G; b+=B; n++;
+    // brown-ish: R > G > B and R-B > 30
+    if (R > G && G > B && (R-B) > 30 && R < 180) brownPixels++;
+  }
+  r/=n; g/=n; b/=n;
+  // Convert to HSV-ish
+  const max = Math.max(r,g,b), min = Math.min(r,g,b);
+  const val = max/255;
+  const sat = max === 0 ? 0 : (max-min)/max;
+  let hue = 0;
+  if (max !== min) {
+    if (max === r) hue = (60 * ((g-b)/(max-min)) + 360) % 360;
+    else if (max === g) hue = 60 * ((b-r)/(max-min)) + 120;
+    else hue = 60 * ((r-g)/(max-min)) + 240;
+  }
+  const brownRatio = brownPixels / n;
+  // Score 0..1, higher = riper
+  let score = 0.3;
+  if (hue < 80 || hue > 200) score += 0.15;     // not green
+  if (hue >= 30 && hue <= 60) score += 0.15;    // yellow-brown range
+  score += Math.min(0.3, brownRatio * 1.5);     // brown spots
+  score += (1 - val) * 0.2;                     // darker tones
+  score = Math.max(0, Math.min(1, score));
+  return { riperScore: score, hue, sat, val, brownRatio, r, g, b };
+}
+
+/* ============ Microphone ============ */
+let audioStream = null, audioCtx = null, analyser = null, dataArray = null, vizRaf = null;
+let collectedFreqs = []; // dominant freqs over time
+let peakEnergies = [];   // low-freq energy ratio per frame
+
+async function setupMic() {
+  const errEl = document.getElementById('mic-err');
+  const btnAnalyze = document.getElementById('btn-analyze');
+  const mic = document.getElementById('mic-circle');
+  errEl.classList.add('hidden');
+  btnAnalyze.disabled = !state.audioAnalysis;
+
+  // Bind press-hold (touch + mouse)
+  const start = async (e) => {
+    e.preventDefault();
+    if (state.recording) return;
+    try {
+      audioStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    } catch (err) {
+      errEl.textContent = '❌ เปิดไมค์ไม่ได้: ' + (err.message || err.name);
+      errEl.classList.remove('hidden');
+      return;
+    }
+    state.recording = true;
+    collectedFreqs = [];
+    peakEnergies = [];
+    mic.classList.add('recording');
+    document.getElementById('mic-status').textContent = '🔴 กำลังบันทึก... เคาะทุเรียน';
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(audioStream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    src.connect(analyser);
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+    vizLoop();
+  };
+  const stop = (e) => {
+    e && e.preventDefault();
+    if (!state.recording) return;
+    state.recording = false;
+    mic.classList.remove('recording');
+    document.getElementById('mic-status').textContent = '✅ บันทึกแล้ว ' + collectedFreqs.length + ' เฟรม';
+    cancelAnimationFrame(vizRaf);
+    if (audioStream) audioStream.getTracks().forEach(t => t.stop());
+    if (audioCtx) audioCtx.close();
+    state.audioAnalysis = analyzeAudio(collectedFreqs, peakEnergies);
+    btnAnalyze.disabled = false;
+  };
+
+  mic.onmousedown = start;
+  mic.onmouseup = stop;
+  mic.onmouseleave = stop;
+  mic.ontouchstart = start;
+  mic.ontouchend = stop;
+  mic.ontouchcancel = stop;
+}
+
+function vizLoop() {
+  if (!state.recording) return;
+  analyser.getByteFrequencyData(dataArray);
+  // Find peak bin
+  let maxV=0, maxI=0, lowEnergy=0, totalEnergy=0;
+  const sampleRate = audioCtx.sampleRate;
+  const binHz = sampleRate / analyser.fftSize;
+  for (let i=1;i<dataArray.length;i++) {
+    const v = dataArray[i];
+    totalEnergy += v;
+    if (i*binHz < 500) lowEnergy += v;
+    if (v > maxV) { maxV = v; maxI = i; }
+  }
+  if (maxV > 30) { // ignore silence
+    const freq = maxI * binHz;
+    collectedFreqs.push(freq);
+    peakEnergies.push(totalEnergy > 0 ? lowEnergy / totalEnergy : 0);
+  }
+  // Visualize
+  const c = document.getElementById('audio-viz');
+  const ctx = c.getContext('2d');
+  const W = c.width = c.clientWidth, H = c.height = c.clientHeight;
+  ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#6b8e23';
+  const bars = 64;
+  const step = Math.floor(dataArray.length / bars);
+  for (let i=0;i<bars;i++) {
+    const v = dataArray[i*step];
+    const h = (v/255) * H;
+    ctx.fillRect(i*(W/bars), H-h, (W/bars)-1, h);
+  }
+  vizRaf = requestAnimationFrame(vizLoop);
+}
+
+// Riper durians produce hollower, lower-pitched "ป๊อก ป๊อก" sounds with more low-frequency energy
+function analyzeAudio(freqs, lowRatios) {
+  if (!freqs.length) return { riperScore: 0.5, avgFreq: 0, lowRatio: 0, samples: 0 };
+  const avgFreq = freqs.reduce((a,b)=>a+b,0) / freqs.length;
+  const avgLow = lowRatios.reduce((a,b)=>a+b,0) / lowRatios.length;
+  // Score 0..1, higher = riper
+  // Lower avg freq -> riper. Map: 800Hz->0, 100Hz->1
+  let freqScore = 1 - Math.min(1, Math.max(0, (avgFreq - 100) / 700));
+  // More low-freq energy ratio -> riper
+  let lowScore = Math.min(1, avgLow * 1.4);
+  const score = freqScore * 0.55 + lowScore * 0.45;
+  return { riperScore: score, avgFreq, lowRatio: avgLow, samples: freqs.length };
+}
+
+/* ============ Analyze & Result ============ */
+function analyze() {
+  if (!state.audioAnalysis) return;
+  goStep('result');
+}
+
+function combinedPhotoScore() {
+  // Weighted average across stem/body/bottom (defined in PHOTO_STEPS)
+  let sum = 0, wsum = 0;
+  for (const s of PHOTO_STEPS) {
+    const a = state.photoAnalyses[s.key];
+    if (a) { sum += a.riperScore * s.weight; wsum += s.weight; }
+  }
+  return wsum > 0 ? sum / wsum : 0.5;
+}
+
+function combinedScore() {
+  const pa = combinedPhotoScore();
+  const aa = state.audioAnalysis?.riperScore ?? 0.5;
+  // photo (3 parts combined) 45% + sound 55%
+  return pa * 0.45 + aa * 0.55;
+}
+
+/* ============ Maturity (อ่อน / กึ่งแก่ / แก่) ============ */
+// Different from ripeness: maturity = was it harvested at the right time?
+// Young (อ่อน) durian never ripens properly even if you wait.
+// Mainly inferred from sound (hollow = mature, solid high-pitch = young) + skin color
+function computeMaturityScore() {
+  const aa = state.audioAnalysis;
+  // Audio is the strongest indicator
+  let audioMat = 0.5;
+  if (aa && aa.samples > 0) {
+    // avgFreq: 800Hz+ = solid (young), 200Hz- = hollow (mature)
+    const freqMat = 1 - Math.min(1, Math.max(0, (aa.avgFreq - 150) / 700));
+    // low-freq energy ratio: higher = more hollow = mature
+    const lowMat = Math.min(1, aa.lowRatio * 2);
+    audioMat = freqMat * 0.55 + lowMat * 0.45;
+  }
+  // Skin color: vivid pure-green = young; muted/brown tints = mature
+  const body = state.photoAnalyses.body;
+  let bodyMat = 0.5;
+  if (body) {
+    const isVividGreen = body.hue > 70 && body.hue < 150 && body.sat > 0.55;
+    if (isVividGreen) {
+      bodyMat = Math.max(0.05, 0.45 - (body.sat - 0.55) * 1.2);
+    } else {
+      bodyMat = Math.min(1, 0.55 + body.brownRatio * 1.8);
+    }
+  }
+  // Stem brown spots also hint maturity
+  const stem = state.photoAnalyses.stem;
+  let stemMat = 0.5;
+  if (stem) stemMat = Math.min(1, 0.45 + stem.brownRatio * 1.8);
+
+  return Math.max(0, Math.min(1, audioMat * 0.55 + bodyMat * 0.25 + stemMat * 0.20));
+}
+
+const MATURITY_INFO = {
+  young:  { emoji: '🥒', label: 'อ่อน', cls: 'young',  desc: 'อาจไม่สุกครีมมี่ — เนื้อจะแข็ง รสจืด ไม่แนะนำให้รอนาน ทานเร็วหรือทำของหวาน' },
+  medium: { emoji: '🥭', label: 'กึ่งแก่', cls: 'medium', desc: 'แก่ปานกลาง — น่าจะสุกถึงระดับ 1-2 แต่อาจไม่ครีมมี่เต็มที่' },
+  mature: { emoji: '🟢', label: 'แก่', cls: 'mature', desc: 'แก่จัด เก็บมาตอนพร้อม — สุกครบทั้ง 3 ระดับตามตาราง' },
+};
+
+function maturityCategory(score) {
+  if (score < 0.35) return 'young';
+  if (score < 0.6) return 'medium';
+  return 'mature';
+}
+
+/* ============ Ripeness timeline prediction ============ */
+const LEVEL_INFO = {
+  1: { emoji: '🌰', name: 'กรอบนอก นุ่มใน', desc: 'เนื้อแน่น เริ่มสุก กัดแล้วกรุบ', cls: 'future-1' },
+  2: { emoji: '🍯', name: 'นุ่มละมุน',      desc: 'เนื้อนุ่ม หวานพอดี รสชาติพีค',  cls: 'future-2' },
+  3: { emoji: '🍮', name: 'นุ่มเละ ครีมมี่', desc: 'สุกเต็มที่ ครีมมี่ ละลายในปาก', cls: 'future-3' },
+};
+
+// Predict days from today until each level arrives, given current ripeness score (0..1)
+// Higher score = riper now = level 1 already passed
+// Spacing: ~2 days between each level
+function predictLevelDates(score) {
+  const daysToL1 = Math.round((1 - score) * 6 - 1); // score 0 → 5d, score 0.5 → 2d, score 1 → -1d
+  const offsets = { 1: daysToL1, 2: daysToL1 + 2, 3: daysToL1 + 4 };
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const result = {};
+  for (const lvl of [1,2,3]) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + offsets[lvl]);
+    result[lvl] = { date: d, daysFromToday: offsets[lvl] };
+  }
+  return result;
+}
+
+function fmtThaiDate(d) {
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return d.getDate() + ' ' + months[d.getMonth()] + ' ' + ((d.getFullYear()+543) % 100);
+}
+
+function dayLabel(days) {
+  if (days < 0) return 'ผ่านแล้ว';
+  if (days === 0) return 'วันนี้';
+  if (days === 1) return 'พรุ่งนี้';
+  if (days === 2) return 'มะรืน';
+  return 'อีก ' + days + ' วัน';
+}
+
+function ripenessSummary(score) {
+  const pct = Math.round(score * 100);
+  if (score < 0.25) return `ความสุก ${pct}% — ยังดิบ ต้องบ่มอีกหลายวัน`;
+  if (score < 0.45) return `ความสุก ${pct}% — เริ่มสุก รออีก 2-3 วัน`;
+  if (score < 0.65) return `ความสุก ${pct}% — ใกล้พร้อมทาน`;
+  if (score < 0.85) return `ความสุก ${pct}% — พร้อมทานแล้ว`;
+  return `ความสุก ${pct}% — สุกจัด ควรรีบทาน`;
+}
+
+function renderResult() {
+  const score = combinedScore();
+  const pct = Math.round(score * 100);
+  const confEl = document.getElementById('conf-bar');
+  confEl.style.width = pct + '%';
+  confEl.textContent = 'ความสุก ' + pct + '%';
+  document.getElementById('ripeness-summary').textContent = ripenessSummary(score);
+
+  // Maturity panel
+  const matScore = computeMaturityScore();
+  const matKey = maturityCategory(matScore);
+  const matInfo = MATURITY_INFO[matKey];
+  const matEl = document.getElementById('maturity-panel');
+  matEl.className = 'maturity-panel ' + matInfo.cls;
+  matEl.innerHTML =
+    `<div class="maturity-emoji">${matInfo.emoji}</div>` +
+    `<div>` +
+      `<p class="maturity-title">ความแก่: ${matInfo.label} (${Math.round(matScore*100)}%)</p>` +
+      `<p class="maturity-desc">${matInfo.desc}</p>` +
+    `</div>`;
+
+  // Determine which levels are reachable based on maturity
+  // young: only level 1 reachable; medium: 1-2; mature: all 3
+  const maxReachableLevel = matKey === 'young' ? 1 : (matKey === 'medium' ? 2 : 3);
+
+  // Build timeline
+  const dates = predictLevelDates(score);
+  const tlEl = document.getElementById('timeline');
+  tlEl.innerHTML = '';
+  for (const lvl of [1,2,3]) {
+    const info = LEVEL_INFO[lvl];
+    const d = dates[lvl];
+    const days = d.daysFromToday;
+    let cls = info.cls;
+    let status = '';
+    let dateText = `📅 ${fmtThaiDate(d.date)} <span style="font-weight:600; opacity:0.75;">(${dayLabel(days)})</span>`;
+    if (lvl > maxReachableLevel) {
+      cls = 'unreach';
+      status = '<span class="tl-status" style="background:#c0392b;color:white;">อาจไม่ถึง</span>';
+      dateText = `⚠️ ทุเรียนอาจไม่สุกถึงระดับนี้`;
+    } else if (days < 0) {
+      cls = 'passed'; status = '<span class="tl-status">ผ่านแล้ว</span>';
+    } else if (days === 0) {
+      cls = 'today'; status = '<span class="tl-status now">ทานได้วันนี้</span>';
+    }
+    const div = document.createElement('div');
+    div.className = 'tl-item ' + cls;
+    div.innerHTML =
+      `<span class="tl-emoji">${info.emoji}</span>` +
+      `<div class="tl-title">ระดับ ${lvl} - ${info.name}${status}</div>` +
+      `<div class="tl-desc">${info.desc}</div>` +
+      `<div class="tl-date">${dateText}</div>`;
+    tlEl.appendChild(div);
+  }
+
+  // Show photo thumbnails + measurement details
+  const aa = state.audioAnalysis;
+  const photoRows = PHOTO_STEPS.map(s => {
+    const a = state.photoAnalyses[s.key];
+    const img = state.photos[s.key];
+    if (!a || !img) return '';
+    return `<figure><img src="${img}" alt="${s.key}"><figcaption>${s.badge}<br>${(a.riperScore*100).toFixed(0)}%</figcaption></figure>`;
+  }).join('');
+  document.getElementById('scores').innerHTML =
+    `<div class="photo-grid">${photoRows}</div>` +
+    `<details><summary>รายละเอียดการวัด</summary>` +
+    `<div>📷 ภาพรวม: ${(combinedPhotoScore()*100).toFixed(0)}% (ขั้ว 45% / เปลือก 35% / ก้น 20%)</div>` +
+    `<div>🔊 เสียง: ${(aa.riperScore*100).toFixed(0)}% (ความถี่เฉลี่ย ${aa.avgFreq.toFixed(0)} Hz, ${aa.samples} เฟรม)</div>` +
+    `</details>`;
+}
+
+/* ============ Label ============ */
+function renderLabel() {
+  const score = combinedScore();
+  const pct = Math.round(score * 100);
+  const dates = predictLevelDates(score);
+  const matScore = computeMaturityScore();
+  const matKey = maturityCategory(matScore);
+  const matInfo = MATURITY_INFO[matKey];
+  const maxReachableLevel = matKey === 'young' ? 1 : (matKey === 'medium' ? 2 : 3);
+
+  document.getElementById('lbl-ripe').textContent =
+    'ความสุกตอนตรวจ: ' + pct + '%';
+
+  const matEl = document.getElementById('lbl-maturity');
+  matEl.textContent = matInfo.emoji + ' ความแก่: ' + matInfo.label;
+  matEl.className = 'lbl-mat-line ' + matInfo.cls;
+
+  const levelsEl = document.getElementById('lbl-levels');
+  levelsEl.innerHTML = '';
+  for (const lvl of [1,2,3]) {
+    const info = LEVEL_INFO[lvl];
+    const d = dates[lvl];
+    const passed = d.daysFromToday < 0;
+    const unreach = lvl > maxReachableLevel;
+    const row = document.createElement('div');
+    row.className = 'lbl-lv lv' + lvl + (passed ? ' passed' : '') + (unreach ? ' passed' : '');
+    const dateLabel = unreach ? '✕ อาจไม่ถึง' : (passed ? 'ผ่านแล้ว' : fmtThaiDate(d.date));
+    row.innerHTML =
+      `<div class="lv-num">${lvl}</div>` +
+      `<div class="lv-name">${info.emoji} ${info.name}</div>` +
+      `<div class="lv-date">${dateLabel}</div>`;
+    levelsEl.appendChild(row);
+  }
+
+  const checked = new Date();
+  document.getElementById('lbl-checked').textContent =
+    checked.getDate() + '/' + (checked.getMonth()+1) + '/' + ((checked.getFullYear()+543) % 100) +
+    ' ' + String(checked.getHours()).padStart(2,'0') + ':' + String(checked.getMinutes()).padStart(2,'0');
+
+  // QR encodes a summary the buyer can scan
+  const qrLevels = [1,2,3].map(lvl => {
+    const d = dates[lvl];
+    if (lvl > maxReachableLevel) return 'L'+lvl+':ไม่ถึง';
+    if (d.daysFromToday < 0) return 'L'+lvl+':ผ่าน';
+    return 'L'+lvl+':'+fmtThaiDate(d.date);
+  });
+  const qrText = [
+    'ทุเรียน',
+    'แก่:'+matInfo.label,
+    'สุก:'+pct+'%',
+    ...qrLevels,
+  ].join(' | ');
+  const qrEl = document.getElementById('qr');
+  qrEl.innerHTML = '';
+  if (window.QRCode) {
+    try {
+      new QRCode(qrEl, { text: qrText, width: 70, height: 70, correctLevel: QRCode.CorrectLevel.M });
+    } catch (e) { fallbackQR(qrEl, qrText); }
+  } else {
+    fallbackQR(qrEl, qrText);
+  }
+}
+
+function fallbackQR(el, text) {
+  const img = document.createElement('img');
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=' + encodeURIComponent(text);
+  img.alt = 'QR'; img.width = 70; img.height = 70;
+  el.appendChild(img);
+}
+</script>
+</body>
+</html>
