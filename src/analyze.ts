@@ -1,9 +1,4 @@
-// Cloudflare Pages Function: POST /api/analyze
-// Proxies durian analysis requests to Claude API (Haiku 4.5 with vision + prompt caching)
-
-interface Env {
-  ANTHROPIC_API_KEY: string;
-}
+import type { Env } from "./index";
 
 interface AnalyzeRequest {
   photos: {
@@ -198,9 +193,7 @@ const RESPONSE_SCHEMA = {
   additionalProperties: false,
 };
 
-export const onRequestPost: PagesFunction<Env> = async (context) => {
-  const { request, env } = context;
-
+export async function handleAnalyze(request: Request, env: Env): Promise<Response> {
   if (!env.ANTHROPIC_API_KEY) {
     return jsonResponse({ error: "ANTHROPIC_API_KEY not configured on server" }, 500);
   }
@@ -312,7 +305,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     model: MODEL,
     cached: (data.usage?.cache_read_input_tokens ?? 0) > 0,
   });
-};
+}
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
