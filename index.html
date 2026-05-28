@@ -370,6 +370,21 @@
     <span class="step-label">เริ่มต้น</span>
     <h2>ตรวจทุเรียนของคุณ</h2>
     <p class="hint">ใช้กล้องถ่ายเปลือกทุเรียน + เคาะฟังเสียง ระบบจะบอกระดับความสุกและวันที่ควรทาน</p>
+
+    <div style="margin: 12px 0 16px;">
+      <div style="font-weight:700; margin-bottom:6px;">เลือกโหมดการตรวจ:</div>
+      <label class="mode-card" style="display:block; padding:10px 12px; border-radius:10px; border:2px solid var(--green); background:#f0f8e8; margin-bottom:8px; cursor:pointer;">
+        <input type="radio" name="mode" value="ai" checked onchange="updateMode()" style="margin-right:8px;">
+        <strong>🤖 ตรวจด้วย Claude AI</strong>
+        <div style="font-size:13px; color:var(--muted); margin-top:2px;">ความแม่นสูง ใช้ AI วิเคราะห์ภาพและเสียง (ต้องต่อเน็ต ~0.1 บาท/ครั้ง)</div>
+      </label>
+      <label class="mode-card" style="display:block; padding:10px 12px; border-radius:10px; border:2px solid #ddd; cursor:pointer;">
+        <input type="radio" name="mode" value="heuristic" onchange="updateMode()" style="margin-right:8px;">
+        <strong>⚡ เกณฑ์อย่างง่าย</strong>
+        <div style="font-size:13px; color:var(--muted); margin-top:2px;">เร็ว ฟรี ออฟไลน์ได้ (ความแม่นปานกลาง)</div>
+      </label>
+    </div>
+
     <button class="big" onclick="goStep('camera')">▶ เริ่มตรวจทุเรียน</button>
     <details>
       <summary>วิธีใช้งาน</summary>
@@ -380,6 +395,17 @@
         <li>พิมพ์สติกเกอร์แปะที่ผลทุเรียนได้เลย</li>
       </ol>
     </details>
+  </section>
+
+  <!-- Loading screen for AI -->
+  <section id="step-loading" class="card hidden" style="text-align:center;">
+    <h2>🤖 Claude กำลังวิเคราะห์...</h2>
+    <div style="font-size:60px; margin:24px 0;">🥭</div>
+    <div class="hint" id="loading-msg">กำลังส่งภาพและเสียงให้ AI...</div>
+    <div class="confidence" style="margin-top:16px;">
+      <div class="confidence-bar" id="load-bar" style="width:30%; background:linear-gradient(90deg,var(--green),var(--yellow));">โปรดรอ 5-10 วินาที</div>
+    </div>
+    <div id="load-err" class="err hidden" style="margin-top:12px;"></div>
   </section>
 
   <!-- Step 1: Camera (cycles 3 times: stem, body, bottom) -->
@@ -525,10 +551,12 @@ const PHOTO_STEPS = [
 ];
 
 const state = {
+  mode: 'ai',                                                // 'ai' | 'heuristic'
   photoStep: 0,                                              // 0..2
   photos: { stem: null, body: null, bottom: null },          // dataURL each
   photoAnalyses: { stem: null, body: null, bottom: null },   // score per part
   audioAnalysis: null,
+  aiResult: null,                                            // Claude response if mode=ai
   selectedLevel: null,
   recording: false,
   mediaRecorder: null,
@@ -536,8 +564,19 @@ const state = {
   audioChunks: [],
 };
 
+function updateMode() {
+  const checked = document.querySelector('input[name="mode"]:checked');
+  state.mode = checked ? checked.value : 'ai';
+  document.querySelectorAll('.mode-card').forEach(card => {
+    const input = card.querySelector('input');
+    const active = input && input.checked;
+    card.style.borderColor = active ? 'var(--green)' : '#ddd';
+    card.style.background = active ? '#f0f8e8' : 'white';
+  });
+}
+
 /* ============ Navigation ============ */
-const STEPS = ['home','camera','photo-confirm','mic','result','label'];
+const STEPS = ['home','camera','photo-confirm','mic','loading','result','label'];
 function goStep(name) {
   STEPS.forEach(s => {
     const el = document.getElementById('step-'+s);
@@ -558,6 +597,7 @@ function restart() {
   state.photos = { stem: null, body: null, bottom: null };
   state.photoAnalyses = { stem: null, body: null, bottom: null };
   state.audioAnalysis = null;
+  state.aiResult = null;
   state.selectedLevel = null;
   goStep('home');
 }
@@ -846,9 +886,63 @@ function analyzeAudio(freqs, lowRatios) {
 }
 
 /* ============ Analyze & Result ============ */
-function analyze() {
+async function analyze() {
   if (!state.audioAnalysis) return;
+  if (state.mode === 'ai') {
+    goStep('loading');
+    try {
+      const aiResult = await callClaudeAPI();
+      state.aiResult = aiResult;
+      goStep('result');
+    } catch (e) {
+      const errEl = document.getElementById('load-err');
+      errEl.innerHTML = '❌ Claude AI ใช้ไม่ได้: ' + (e.message || e) +
+        '<br><button class="big yellow" style="margin-top:10px;" onclick="fallbackHeuristic()">ใช้เกณฑ์อย่างง่ายแทน</button>';
+      errEl.classList.remove('hidden');
+    }
+  } else {
+    goStep('result');
+  }
+}
+
+function fallbackHeuristic() {
+  state.mode = 'heuristic';
+  state.aiResult = null;
   goStep('result');
+}
+
+function dataUrlToBase64(dataUrl) {
+  const i = dataUrl.indexOf(',');
+  return i < 0 ? dataUrl : dataUrl.substring(i + 1);
+}
+
+async function callClaudeAPI() {
+  const payload = {
+    photos: {
+      stem: dataUrlToBase64(state.photos.stem),
+      body: dataUrlToBase64(state.photos.body),
+      bottom: dataUrlToBase64(state.photos.bottom),
+    },
+    audio: {
+      avgFreq: state.audioAnalysis.avgFreq || 0,
+      lowRatio: state.audioAnalysis.lowRatio || 0,
+      samples: state.audioAnalysis.samples || 0,
+    },
+  };
+  const msg = document.getElementById('loading-msg');
+  msg.textContent = 'กำลังส่งภาพ 3 ภาพ + เสียงให้ Claude AI...';
+  const resp = await fetch('/api/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`HTTP ${resp.status}: ${text.slice(0, 200)}`);
+  }
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error);
+  return data.result;
 }
 
 function combinedPhotoScore() {
@@ -924,6 +1018,21 @@ const LEVEL_INFO = {
 // Predict days from today until each level arrives, given current ripeness score (0..1)
 // Higher score = riper now = level 1 already passed
 // Spacing: ~2 days between each level
+function aiDaysToDates(ai) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const mk = (days) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() + days);
+    return { date: d, daysFromToday: days };
+  };
+  return {
+    1: mk(ai.days_to_level_1),
+    2: mk(ai.days_to_level_2),
+    3: mk(ai.days_to_level_3),
+  };
+}
+
 function predictLevelDates(score) {
   const daysToL1 = Math.round((1 - score) * 6 - 1); // score 0 → 5d, score 0.5 → 2d, score 1 → -1d
   const offsets = { 1: daysToL1, 2: daysToL1 + 2, 3: daysToL1 + 4 };
@@ -961,16 +1070,18 @@ function ripenessSummary(score) {
 }
 
 function renderResult() {
-  const score = combinedScore();
+  const ai = state.aiResult;
+  const score = ai ? ai.ripeness_score : combinedScore();
   const pct = Math.round(score * 100);
   const confEl = document.getElementById('conf-bar');
   confEl.style.width = pct + '%';
-  confEl.textContent = 'ความสุก ' + pct + '%';
-  document.getElementById('ripeness-summary').textContent = ripenessSummary(score);
+  confEl.textContent = 'ความสุก ' + pct + '%' + (ai ? ' • 🤖 AI' : '');
+  document.getElementById('ripeness-summary').textContent =
+    ai ? (ai.reasoning_thai || ripenessSummary(score)) : ripenessSummary(score);
 
   // Maturity panel
-  const matScore = computeMaturityScore();
-  const matKey = maturityCategory(matScore);
+  const matScore = ai ? ai.maturity_score : computeMaturityScore();
+  const matKey = ai ? ai.maturity : maturityCategory(matScore);
   const matInfo = MATURITY_INFO[matKey];
   const matEl = document.getElementById('maturity-panel');
   matEl.className = 'maturity-panel ' + matInfo.cls;
@@ -982,11 +1093,11 @@ function renderResult() {
     `</div>`;
 
   // Determine which levels are reachable based on maturity
-  // young: only level 1 reachable; medium: 1-2; mature: all 3
-  const maxReachableLevel = matKey === 'young' ? 1 : (matKey === 'medium' ? 2 : 3);
+  const maxReachableLevel = ai ? ai.max_reachable_level
+    : (matKey === 'young' ? 1 : (matKey === 'medium' ? 2 : 3));
 
-  // Build timeline
-  const dates = predictLevelDates(score);
+  // Build timeline — AI provides explicit day offsets, otherwise derive from score
+  const dates = ai ? aiDaysToDates(ai) : predictLevelDates(score);
   const tlEl = document.getElementById('timeline');
   tlEl.innerHTML = '';
   for (const lvl of [1,2,3]) {
@@ -1020,26 +1131,34 @@ function renderResult() {
   const photoRows = PHOTO_STEPS.map(s => {
     const a = state.photoAnalyses[s.key];
     const img = state.photos[s.key];
-    if (!a || !img) return '';
-    return `<figure><img src="${img}" alt="${s.key}"><figcaption>${s.badge}<br>${(a.riperScore*100).toFixed(0)}%</figcaption></figure>`;
+    if (!img) return '';
+    const aiNote = ai && ai.indicators && ai.indicators[s.key] ? ai.indicators[s.key] : '';
+    const caption = ai
+      ? `${s.badge}<br><span style="font-size:11px;">${aiNote}</span>`
+      : `${s.badge}<br>${a ? (a.riperScore*100).toFixed(0) + '%' : '-'}`;
+    return `<figure><img src="${img}" alt="${s.key}"><figcaption>${caption}</figcaption></figure>`;
   }).join('');
+  const detail = ai
+    ? `<div>🤖 Claude AI: confidence ${(ai.confidence*100).toFixed(0)}% | ความแก่ ${(ai.maturity_score*100).toFixed(0)}% | ความสุก ${(ai.ripeness_score*100).toFixed(0)}%</div>` +
+      `<div>🔊 เสียง: ${aa.avgFreq.toFixed(0)} Hz, low-energy ${(aa.lowRatio*100).toFixed(0)}%, ${aa.samples} เฟรม</div>`
+    : `<div>📷 ภาพรวม: ${(combinedPhotoScore()*100).toFixed(0)}% (ขั้ว 45% / เปลือก 35% / ก้น 20%)</div>` +
+      `<div>🔊 เสียง: ${(aa.riperScore*100).toFixed(0)}% (ความถี่เฉลี่ย ${aa.avgFreq.toFixed(0)} Hz, ${aa.samples} เฟรม)</div>`;
   document.getElementById('scores').innerHTML =
     `<div class="photo-grid">${photoRows}</div>` +
-    `<details><summary>รายละเอียดการวัด</summary>` +
-    `<div>📷 ภาพรวม: ${(combinedPhotoScore()*100).toFixed(0)}% (ขั้ว 45% / เปลือก 35% / ก้น 20%)</div>` +
-    `<div>🔊 เสียง: ${(aa.riperScore*100).toFixed(0)}% (ความถี่เฉลี่ย ${aa.avgFreq.toFixed(0)} Hz, ${aa.samples} เฟรม)</div>` +
-    `</details>`;
+    `<details${ai ? ' open' : ''}><summary>รายละเอียดการวัด</summary>${detail}</details>`;
 }
 
 /* ============ Label ============ */
 function renderLabel() {
-  const score = combinedScore();
+  const ai = state.aiResult;
+  const score = ai ? ai.ripeness_score : combinedScore();
   const pct = Math.round(score * 100);
-  const dates = predictLevelDates(score);
-  const matScore = computeMaturityScore();
-  const matKey = maturityCategory(matScore);
+  const dates = ai ? aiDaysToDates(ai) : predictLevelDates(score);
+  const matScore = ai ? ai.maturity_score : computeMaturityScore();
+  const matKey = ai ? ai.maturity : maturityCategory(matScore);
   const matInfo = MATURITY_INFO[matKey];
-  const maxReachableLevel = matKey === 'young' ? 1 : (matKey === 'medium' ? 2 : 3);
+  const maxReachableLevel = ai ? ai.max_reachable_level
+    : (matKey === 'young' ? 1 : (matKey === 'medium' ? 2 : 3));
 
   document.getElementById('lbl-ripe').textContent =
     'ความสุกตอนตรวจ: ' + pct + '%';
