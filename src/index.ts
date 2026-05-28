@@ -2,7 +2,7 @@ import { handleAnalyze } from "./analyze";
 
 export interface Env {
   ASSETS: Fetcher;
-  ANTHROPIC_API_KEY: string;
+  GEMINI_API_KEY: string;
 }
 
 export default {

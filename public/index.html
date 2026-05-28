@@ -375,8 +375,8 @@
       <div style="font-weight:700; margin-bottom:6px;">เลือกโหมดการตรวจ:</div>
       <label class="mode-card" style="display:block; padding:10px 12px; border-radius:10px; border:2px solid var(--green); background:#f0f8e8; margin-bottom:8px; cursor:pointer;">
         <input type="radio" name="mode" value="ai" checked onchange="updateMode()" style="margin-right:8px;">
-        <strong>🤖 ตรวจด้วย Claude AI</strong>
-        <div style="font-size:13px; color:var(--muted); margin-top:2px;">ความแม่นสูง ใช้ AI วิเคราะห์ภาพและเสียง (ต้องต่อเน็ต ~0.1 บาท/ครั้ง)</div>
+        <strong>🤖 ตรวจด้วย Gemini AI</strong>
+        <div style="font-size:13px; color:var(--muted); margin-top:2px;">ความแม่นสูง ใช้ AI วิเคราะห์ภาพและเสียง (ต้องต่อเน็ต ~0.05 บาท/ครั้ง)</div>
       </label>
       <label class="mode-card" style="display:block; padding:10px 12px; border-radius:10px; border:2px solid #ddd; cursor:pointer;">
         <input type="radio" name="mode" value="heuristic" onchange="updateMode()" style="margin-right:8px;">
@@ -399,7 +399,7 @@
 
   <!-- Loading screen for AI -->
   <section id="step-loading" class="card hidden" style="text-align:center;">
-    <h2>🤖 Claude กำลังวิเคราะห์...</h2>
+    <h2>🤖 Gemini กำลังวิเคราะห์...</h2>
     <div style="font-size:60px; margin:24px 0;">🥭</div>
     <div class="hint" id="loading-msg">กำลังส่งภาพและเสียงให้ AI...</div>
     <div class="confidence" style="margin-top:16px;">
@@ -556,7 +556,7 @@ const state = {
   photos: { stem: null, body: null, bottom: null },          // dataURL each
   photoAnalyses: { stem: null, body: null, bottom: null },   // score per part
   audioAnalysis: null,
-  aiResult: null,                                            // Claude response if mode=ai
+  aiResult: null,                                            // Gemini response if mode=ai
   selectedLevel: null,
   recording: false,
   mediaRecorder: null,
@@ -891,12 +891,12 @@ async function analyze() {
   if (state.mode === 'ai') {
     goStep('loading');
     try {
-      const aiResult = await callClaudeAPI();
+      const aiResult = await callGeminiAPI();
       state.aiResult = aiResult;
       goStep('result');
     } catch (e) {
       const errEl = document.getElementById('load-err');
-      errEl.innerHTML = '❌ Claude AI ใช้ไม่ได้: ' + (e.message || e) +
+      errEl.innerHTML = '❌ Gemini AI ใช้ไม่ได้: ' + (e.message || e) +
         '<br><button class="big yellow" style="margin-top:10px;" onclick="fallbackHeuristic()">ใช้เกณฑ์อย่างง่ายแทน</button>';
       errEl.classList.remove('hidden');
     }
@@ -916,7 +916,7 @@ function dataUrlToBase64(dataUrl) {
   return i < 0 ? dataUrl : dataUrl.substring(i + 1);
 }
 
-async function callClaudeAPI() {
+async function callGeminiAPI() {
   const payload = {
     photos: {
       stem: dataUrlToBase64(state.photos.stem),
@@ -930,7 +930,7 @@ async function callClaudeAPI() {
     },
   };
   const msg = document.getElementById('loading-msg');
-  msg.textContent = 'กำลังส่งภาพ 3 ภาพ + เสียงให้ Claude AI...';
+  msg.textContent = 'กำลังส่งภาพ 3 ภาพ + เสียงให้ Gemini AI...';
   const resp = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1139,7 +1139,7 @@ function renderResult() {
     return `<figure><img src="${img}" alt="${s.key}"><figcaption>${caption}</figcaption></figure>`;
   }).join('');
   const detail = ai
-    ? `<div>🤖 Claude AI: confidence ${(ai.confidence*100).toFixed(0)}% | ความแก่ ${(ai.maturity_score*100).toFixed(0)}% | ความสุก ${(ai.ripeness_score*100).toFixed(0)}%</div>` +
+    ? `<div>🤖 Gemini AI: confidence ${(ai.confidence*100).toFixed(0)}% | ความแก่ ${(ai.maturity_score*100).toFixed(0)}% | ความสุก ${(ai.ripeness_score*100).toFixed(0)}%</div>` +
       `<div>🔊 เสียง: ${aa.avgFreq.toFixed(0)} Hz, low-energy ${(aa.lowRatio*100).toFixed(0)}%, ${aa.samples} เฟรม</div>`
     : `<div>📷 ภาพรวม: ${(combinedPhotoScore()*100).toFixed(0)}% (ขั้ว 45% / เปลือก 35% / ก้น 20%)</div>` +
       `<div>🔊 เสียง: ${(aa.riperScore*100).toFixed(0)}% (ความถี่เฉลี่ย ${aa.avgFreq.toFixed(0)} Hz, ${aa.samples} เฟรม)</div>`;

@@ -13,11 +13,8 @@ interface AnalyzeRequest {
   };
 }
 
-const MODEL = "claude-haiku-4-5";
-const MAX_TOKENS = 1024;
+const MODEL = "gemini-2.5-flash";
 
-// System prompt — kept verbose to exceed Haiku 4.5's 4096-token cache minimum
-// so the rubric stays cached across requests (≈90% input-token discount on cache hits).
 const SYSTEM_PROMPT = `คุณคือผู้เชี่ยวชาญด้านการประเมินทุเรียน (Durian Expert AI) สำหรับพ่อค้าแม่ค้าตลาด SME ในประเทศไทย
 หน้าที่ของคุณคือวิเคราะห์ภาพถ่ายทุเรียน 3 ภาพ พร้อมข้อมูลเสียงเคาะ แล้วประเมิน 2 มิติแยกจากกัน:
 
@@ -51,109 +48,64 @@ const SYSTEM_PROMPT = `คุณคือผู้เชี่ยวชาญด
 # มิติที่ 2: ความสุกตอนนี้ (Ripeness) — สุกมากแค่ไหนแล้ว?
 เปลี่ยนแปลงตามเวลาหลังเก็บเกี่ยว
 
-## คะแนนความสุก 0.0-0.25 (ดิบ)
-- เปลือกเขียวล้วน ขั้วเขียวสด ไม่มีกลิ่น
-- เสียงแน่นแข็ง ความถี่สูง
-
-## คะแนน 0.25-0.45 (เริ่มสุก)
-- เปลือกเริ่มเหลือง บางจุดน้ำตาล
-- ขั้วเริ่มน้ำตาล
-- เสียงเริ่มกลวง
-
-## คะแนน 0.45-0.65 (ใกล้พร้อมทาน)
-- เปลือกเหลืองเด่น น้ำตาลบ้าง
-- ขั้วน้ำตาลแห้ง
-- เสียงทุ้ม
-
-## คะแนน 0.65-0.85 (พร้อมทาน - ระดับ 1)
-- เปลือกน้ำตาลเด่น
-- ขั้วแห้งสนิท บางครั้งแยกเล็กน้อย
-- เสียงกลวงชัด
-
-## คะแนน 0.85-1.0 (สุกจัด - ระดับ 2-3)
-- เปลือกน้ำตาลเข้ม อาจมีรอยแตก
-- กลิ่นแรง
-- เนื้อในเริ่มเหลว
+## คะแนนความสุก 0.0-0.25 (ดิบ): เปลือกเขียวล้วน ขั้วเขียวสด เสียงแน่นแข็ง
+## คะแนน 0.25-0.45 (เริ่มสุก): เปลือกเริ่มเหลือง บางจุดน้ำตาล ขั้วเริ่มน้ำตาล
+## คะแนน 0.45-0.65 (ใกล้พร้อมทาน): เปลือกเหลืองเด่น ขั้วน้ำตาลแห้ง เสียงทุ้ม
+## คะแนน 0.65-0.85 (พร้อมทาน - ระดับ 1): เปลือกน้ำตาลเด่น ขั้วแห้งสนิท เสียงกลวงชัด
+## คะแนน 0.85-1.0 (สุกจัด - ระดับ 2-3): เปลือกน้ำตาลเข้ม กลิ่นแรง เนื้อในเริ่มเหลว
 
 # การพยากรณ์วันที่ทาน 3 ระดับ
-ระยะห่างปกติ: ระดับ 1 → ระดับ 2 ใช้เวลา ~2 วัน, ระดับ 2 → ระดับ 3 ใช้อีก ~2 วัน
+ระยะห่างปกติ: ระดับ 1 → 2 ใช้ ~2 วัน, 2 → 3 อีก ~2 วัน
 
-## ระดับ 1 — กรอบนอก นุ่มใน (กรุบเล็กน้อย)
-เนื้อแน่น เริ่มนุ่ม กัดกรุบ รสชาติเริ่มหวาน
-จากคะแนนความสุกปัจจุบัน คำนวณ: days_to_level_1 = max(-1, round((1 - ripeness_score) * 6 - 1))
+## ระดับ 1 — กรอบนอก นุ่มใน
+สูตร: days_to_level_1 = max(-1, round((1 - ripeness_score) * 6 - 1))
 
-## ระดับ 2 — นุ่มละมุน (พีค)
-เนื้อนุ่ม หวานพอดี กลิ่นหอม รสชาติเข้มที่สุด
+## ระดับ 2 — นุ่มละมุน
 days_to_level_2 = days_to_level_1 + 2
 
 ## ระดับ 3 — นุ่มเละ ครีมมี่
-สุกเต็มที่ เนื้อเหลว ครีมมี่ ละลายในปาก กลิ่นแรง
 days_to_level_3 = days_to_level_1 + 4
 
-# ข้อจำกัดของความแก่ต่อระดับสูงสุดที่ถึงได้
-- maturity = young: ถึงได้สูงสุดระดับ 1 เท่านั้น (ระดับ 2-3 ไม่ถึง — เนื้อจะแข็งหรือเสีย)
-- maturity = medium: ถึงได้สูงสุดระดับ 2 (ระดับ 3 อาจไม่ถึง)
-- maturity = mature: ถึงได้ครบทั้ง 3 ระดับ
+# ข้อจำกัดความแก่ต่อระดับสูงสุด (max_reachable_level)
+- young: ถึงได้สูงสุดระดับ 1 (2-3 ไม่ถึง เนื้อจะแข็ง)
+- medium: ถึงได้สูงสุดระดับ 2 (3 อาจไม่ถึง)
+- mature: ถึงได้ครบทั้ง 3 ระดับ
 
 # วิธีตีความเสียงเคาะ
-- avgFreq (ความถี่เด่น): ต่ำกว่า = กลวงกว่า = แก่กว่า/สุกกว่า
-- lowRatio (สัดส่วนพลังงาน <500Hz): สูงกว่า = กลวงกว่า = แก่กว่า/สุกกว่า
-- samples (จำนวนเฟรม): <10 อาจไม่น่าเชื่อถือ ให้ลด confidence
+- avgFreq ต่ำ = กลวง = แก่/สุก
+- lowRatio สูง = กลวง = แก่/สุก
+- samples <10 ลด confidence
 
 # วิธีตีความภาพ
-ภาพที่ 1 = ขั้ว (น้ำหนักความสำคัญสำหรับความแก่: สูงสุด)
-ภาพที่ 2 = เปลือกด้านข้าง + หนาม (น้ำหนักสำหรับความสุก: สูงสุด)
-ภาพที่ 3 = ก้น (น้ำหนักสำหรับความแก่ที่ตัด: รอยแยก = แก่)
+ภาพ 1 = ขั้ว (น้ำหนัก maturity สูงสุด)
+ภาพ 2 = เปลือก+หนาม (น้ำหนัก ripeness สูงสุด)
+ภาพ 3 = ก้น (รอยแยก = แก่)
 
-ถ้าภาพไม่ชัด/ไม่เห็นทุเรียน/ภาพมืดมาก ให้ลด confidence ลงและระบุใน reasoning_thai
-
-# รูปแบบผลลัพธ์ (ต้องตอบเป็น JSON ตามนี้เท่านั้น)
-ตอบเป็น JSON ตรงตาม schema ที่กำหนด ไม่ต้องมีคำอธิบายอื่นนอก JSON
-
-ฟิลด์ที่ต้องมี:
-- maturity: "young" | "medium" | "mature"
-- maturity_score: 0.0-1.0 (สูง = แก่)
-- ripeness_score: 0.0-1.0 (สูง = สุก)
-- days_to_level_1, days_to_level_2, days_to_level_3: int (วันจากวันนี้ -1 = ผ่านแล้ว)
-- max_reachable_level: 1, 2, หรือ 3 (ระดับสูงสุดที่ลูกนี้จะไปถึง)
-- confidence: 0.0-1.0 (ความมั่นใจ)
-- reasoning_thai: ภาษาไทยสั้น ๆ 1-2 ประโยค สรุปสิ่งที่เห็น
-- indicators: { stem, body, bottom } — สิ่งที่สังเกตเห็นในแต่ละภาพ (ภาษาไทยสั้น ๆ)
+ภาพไม่ชัด/ไม่เห็นทุเรียน ให้ลด confidence และอธิบายใน reasoning_thai
 
 # ตัวอย่างการให้คะแนน
 
-ตัวอย่าง 1: ทุเรียนหมอนทองแก่จัด
-- ขั้วน้ำตาลแห้ง รอยตัดแห้ง
-- หนามห่าง ปลายน้ำตาล
-- ก้นมีรอยแยกชัด
+ตัวอย่าง 1: หมอนทองแก่จัด
+- ขั้วน้ำตาลแห้ง, หนามห่างปลายน้ำตาล, ก้นรอยแยกชัด
 - เสียง 220 Hz, lowRatio 0.42, 45 เฟรม
-→ maturity: "mature", maturity_score: 0.85
-→ ripeness_score: 0.78 (พร้อมทานวันนี้)
-→ days_to_level_1: 0, level_2: 2, level_3: 4
-→ max_reachable_level: 3
+→ maturity: "mature" (0.85), ripeness: 0.78
+→ days L1:0, L2:2, L3:4, max_reachable: 3
 
-ตัวอย่าง 2: ทุเรียนอ่อน (ตัดเร็ว)
-- ขั้วเขียวสด อวบ
-- หนามตั้ง ปลายเขียวเข้ม
-- ก้นปิดสนิท
-- เสียง 780 Hz, lowRatio 0.08, 30 เฟรม
-→ maturity: "young", maturity_score: 0.18
-→ ripeness_score: 0.22
-→ days_to_level_1: 4, level_2: 6, level_3: 8
-→ max_reachable_level: 1 (เพราะอ่อน บ่มไม่ถึงระดับ 2-3)
+ตัวอย่าง 2: ทุเรียนอ่อน
+- ขั้วเขียวสด, หนามตั้งปลายเขียว, ก้นปิด
+- เสียง 780 Hz, lowRatio 0.08
+→ maturity: "young" (0.18), ripeness: 0.22
+→ days L1:4, L2:6, L3:8, max_reachable: 1
 
-ตัวอย่าง 3: ทุเรียนแก่ดิบ
-- ขั้วน้ำตาลที่โคน เริ่มแห้ง
-- หนามห่าง ปลายน้ำตาลอ่อน
-- ก้นมีร่องเริ่มแยก
+ตัวอย่าง 3: แก่แต่ยังดิบ
+- ขั้วน้ำตาลที่โคน, หนามห่างปลายน้ำตาลอ่อน, ก้นเริ่มแยก
 - เสียง 380 Hz, lowRatio 0.28
-→ maturity: "mature", maturity_score: 0.72
-→ ripeness_score: 0.35
-→ days_to_level_1: 2, level_2: 4, level_3: 6
-→ max_reachable_level: 3
+→ maturity: "mature" (0.72), ripeness: 0.35
+→ days L1:2, L2:4, L3:6, max_reachable: 3
 
-ระวัง: หากข้อมูลภาพและเสียงขัดแย้งกัน (เช่น ภาพดูแก่แต่เสียงดูอ่อน) ให้ปรับ confidence ลง และอธิบายใน reasoning_thai
-ห้ามตอบนอก JSON schema เด็ดขาด`;
+ตอบเป็น JSON ตาม schema เท่านั้น ไม่ต้องมี markdown หรือคำอธิบายอื่น
+ใน reasoning_thai ให้เขียน 1-2 ประโยคสั้น ๆ สรุปสิ่งที่เห็น
+ใน indicators ให้เขียนสั้น ๆ (ไม่เกิน 20 คำ) ต่อแต่ละภาพ`;
 
 const RESPONSE_SCHEMA = {
   type: "object",
@@ -175,7 +127,7 @@ const RESPONSE_SCHEMA = {
         bottom: { type: "string" },
       },
       required: ["stem", "body", "bottom"],
-      additionalProperties: false,
+      propertyOrdering: ["stem", "body", "bottom"],
     },
   },
   required: [
@@ -190,12 +142,23 @@ const RESPONSE_SCHEMA = {
     "reasoning_thai",
     "indicators",
   ],
-  additionalProperties: false,
+  propertyOrdering: [
+    "maturity",
+    "maturity_score",
+    "ripeness_score",
+    "days_to_level_1",
+    "days_to_level_2",
+    "days_to_level_3",
+    "max_reachable_level",
+    "confidence",
+    "reasoning_thai",
+    "indicators",
+  ],
 };
 
 export async function handleAnalyze(request: Request, env: Env): Promise<Response> {
-  if (!env.ANTHROPIC_API_KEY) {
-    return jsonResponse({ error: "ANTHROPIC_API_KEY not configured on server" }, 500);
+  if (!env.GEMINI_API_KEY) {
+    return jsonResponse({ error: "GEMINI_API_KEY not configured on server" }, 500);
   }
 
   let body: AnalyzeRequest;
@@ -218,52 +181,41 @@ export async function handleAnalyze(request: Request, env: Env): Promise<Respons
     `- สัดส่วนพลังงานความถี่ต่ำ (<500Hz): ${(body.audio.lowRatio * 100).toFixed(0)}%\n` +
     `- จำนวนเฟรมที่บันทึก: ${body.audio.samples}\n\n` +
     `ภาพ 3 ภาพแนบมาด้วย (ขั้ว / เปลือก / ก้น ตามลำดับ)\n` +
-    `กรุณาวิเคราะห์ตามรูบริค ตอบ JSON ตาม schema`;
+    `วิเคราะห์ตามรูบริค ตอบ JSON ตาม schema`;
 
   const apiBody = {
-    model: MODEL,
-    max_tokens: MAX_TOKENS,
-    system: [
-      {
-        type: "text",
-        text: SYSTEM_PROMPT,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    messages: [
+    systemInstruction: {
+      parts: [{ text: SYSTEM_PROMPT }],
+    },
+    contents: [
       {
         role: "user",
-        content: [
-          { type: "text", text: "ภาพที่ 1 — ขั้ว (stem):" },
-          {
-            type: "image",
-            source: { type: "base64", media_type: "image/jpeg", data: body.photos.stem },
-          },
-          { type: "text", text: "ภาพที่ 2 — เปลือกด้านข้าง (body):" },
-          {
-            type: "image",
-            source: { type: "base64", media_type: "image/jpeg", data: body.photos.body },
-          },
-          { type: "text", text: "ภาพที่ 3 — ก้น (bottom):" },
-          {
-            type: "image",
-            source: { type: "base64", media_type: "image/jpeg", data: body.photos.bottom },
-          },
-          { type: "text", text: userText },
+        parts: [
+          { text: "ภาพที่ 1 — ขั้ว (stem):" },
+          { inline_data: { mime_type: "image/jpeg", data: body.photos.stem } },
+          { text: "ภาพที่ 2 — เปลือกด้านข้าง (body):" },
+          { inline_data: { mime_type: "image/jpeg", data: body.photos.body } },
+          { text: "ภาพที่ 3 — ก้น (bottom):" },
+          { inline_data: { mime_type: "image/jpeg", data: body.photos.bottom } },
+          { text: userText },
         ],
       },
     ],
-    output_config: {
-      format: { type: "json_schema", schema: RESPONSE_SCHEMA },
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: RESPONSE_SCHEMA,
+      temperature: 0.3,
+      maxOutputTokens: 1024,
     },
   };
 
-  const apiResp = await fetch("https://api.anthropic.com/v1/messages", {
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+
+  const apiResp = await fetch(apiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": env.ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
+      "x-goog-api-key": env.GEMINI_API_KEY,
     },
     body: JSON.stringify(apiBody),
   });
@@ -271,39 +223,48 @@ export async function handleAnalyze(request: Request, env: Env): Promise<Respons
   if (!apiResp.ok) {
     const detail = await apiResp.text();
     return jsonResponse(
-      { error: "Claude API error", status: apiResp.status, detail },
+      { error: "Gemini API error", status: apiResp.status, detail },
       apiResp.status === 401 || apiResp.status === 403 ? 500 : apiResp.status,
     );
   }
 
   const data = (await apiResp.json()) as {
-    content: Array<{ type: string; text?: string }>;
-    usage?: {
-      input_tokens?: number;
-      output_tokens?: number;
-      cache_creation_input_tokens?: number;
-      cache_read_input_tokens?: number;
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: string }> };
+      finishReason?: string;
+    }>;
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
     };
-    stop_reason?: string;
+    error?: { message?: string };
   };
 
-  const textBlock = data.content?.find((b) => b.type === "text");
-  if (!textBlock?.text) {
-    return jsonResponse({ error: "No text in Claude response", raw: data }, 502);
+  if (data.error) {
+    return jsonResponse({ error: "Gemini error", detail: data.error.message }, 502);
   }
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    return jsonResponse({ error: "No text in Gemini response", raw: data }, 502);
+  }
+
+  // Strip any markdown code fences just in case
+  const cleaned = text.trim().replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim();
 
   let result: unknown;
   try {
-    result = JSON.parse(textBlock.text);
+    result = JSON.parse(cleaned);
   } catch {
-    return jsonResponse({ error: "Claude returned non-JSON", raw_text: textBlock.text }, 502);
+    return jsonResponse({ error: "Gemini returned non-JSON", raw_text: text }, 502);
   }
 
   return jsonResponse({
     result,
-    usage: data.usage,
+    usage: data.usageMetadata,
     model: MODEL,
-    cached: (data.usage?.cache_read_input_tokens ?? 0) > 0,
+    finishReason: data.candidates?.[0]?.finishReason,
   });
 }
 
