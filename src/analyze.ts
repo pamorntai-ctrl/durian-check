@@ -116,7 +116,7 @@ const RESPONSE_SCHEMA = {
     days_to_level_1: { type: "integer" },
     days_to_level_2: { type: "integer" },
     days_to_level_3: { type: "integer" },
-    max_reachable_level: { type: "integer", enum: [1, 2, 3] },
+    max_reachable_level: { type: "integer" },
     confidence: { type: "number" },
     reasoning_thai: { type: "string" },
     indicators: {
