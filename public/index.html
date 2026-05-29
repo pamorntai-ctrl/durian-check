@@ -336,25 +336,201 @@
   details { margin-top: 12px; }
   summary { cursor: pointer; color: var(--muted); font-size: 14px; }
   .scores { font-size: 14px; color: var(--muted); margin-top: 4px; }
-  /* Print styles - small sticker format */
+  /* Print styles - 58mm POS handheld thermal printer
+     Optimized: pt units, heavy weights, high contrast, no gradients/colors
+     ----------------------------------------------------------------- */
   @media print {
-    body { background: white; margin: 0; }
-    header, main > .card:not(.label-card), .footer-nav, .no-print { display: none !important; }
-    main { padding: 0; max-width: none; }
-    .label-card { box-shadow: none; padding: 0; margin: 0; border-radius: 0; background: white; }
-    .label-print {
-      border: 1px solid #000;
-      page-break-inside: avoid;
-      width: 60mm !important;
+    @page {
+      size: 58mm auto;
+      margin: 1.5mm;
+    }
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    html, body {
+      background: white !important;
       margin: 0 !important;
-      padding: 2mm !important;
-      font-size: 9px !important;
+      padding: 0 !important;
+      font-family: 'Sarabun', 'Noto Sans Thai', sans-serif !important;
+      color: #000 !important;
     }
-    .label-print .lbl-head h3 { font-size: 11px !important; }
-    .label-print .lbl-foot .qr canvas, .label-print .lbl-foot .qr img {
-      width: 18mm !important; height: 18mm !important;
+    header, main > .card:not(.label-card), .footer-nav, .no-print {
+      display: none !important;
     }
-    @page { size: 60mm 90mm; margin: 2mm; }
+    main {
+      padding: 0 !important;
+      margin: 0 !important;
+      max-width: none !important;
+    }
+    .label-card {
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+      background: white !important;
+    }
+    .label-print {
+      width: 55mm !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      border: none !important;
+      background: white !important;
+      color: #000 !important;
+      font-size: 11pt !important;
+      font-weight: 600 !important;
+      line-height: 1.35 !important;
+      page-break-inside: avoid;
+    }
+
+    /* ============ Header ============ */
+    .label-print .lbl-head {
+      text-align: center !important;
+      border-bottom: 0.6mm solid #000 !important;
+      padding: 0 0 1.5mm !important;
+      margin: 0 0 2mm !important;
+    }
+    .label-print .lbl-head h3 {
+      font-size: 18pt !important;
+      font-weight: 900 !important;
+      margin: 0 !important;
+      color: #000 !important;
+      letter-spacing: 0 !important;
+    }
+    .label-print .lbl-head .sub {
+      font-size: 8pt !important;
+      font-weight: 600 !important;
+      color: #000 !important;
+      margin-top: 0.5mm !important;
+    }
+
+    /* ============ Ripeness + Maturity + Date box ============ */
+    .label-print .lbl-ripe {
+      text-align: center !important;
+      background: white !important;
+      border: 0.5mm solid #000 !important;
+      border-radius: 1mm !important;
+      padding: 2mm 1.5mm !important;
+      margin-bottom: 2mm !important;
+      font-size: 13pt !important;
+      font-weight: 800 !important;
+      color: #000 !important;
+    }
+    .label-print #lbl-ripe {
+      font-size: 13pt !important;
+      font-weight: 800 !important;
+    }
+    .label-print .lbl-mat-line {
+      font-size: 15pt !important;
+      font-weight: 900 !important;
+      margin: 1.5mm 0 !important;
+      padding: 1.5mm 2mm !important;
+      border: 0.5mm solid #000 !important;
+      border-radius: 1mm !important;
+      display: inline-block !important;
+      background: white !important;
+      color: #000 !important;
+    }
+    .label-print .lbl-mat-line.young {
+      background: #000 !important;
+      color: #fff !important;
+    }
+    .label-print .lbl-mat-line.medium {
+      background: white !important;
+      color: #000 !important;
+      border-width: 0.8mm !important;
+    }
+    .label-print .lbl-mat-line.mature {
+      background: white !important;
+      color: #000 !important;
+    }
+    .label-print .lbl-checked-line {
+      font-size: 10pt !important;
+      font-weight: 700 !important;
+      color: #000 !important;
+      margin-top: 1mm !important;
+    }
+    .label-print .lbl-checked-line b {
+      color: #000 !important;
+    }
+
+    /* ============ 3 Level rows ============ */
+    .label-print .lbl-levels {
+      margin: 2mm 0 !important;
+    }
+    .label-print .lbl-lv {
+      display: grid !important;
+      grid-template-columns: 7mm 1fr 18mm !important;
+      gap: 1.5mm !important;
+      align-items: center !important;
+      padding: 2mm 1.5mm !important;
+      border: 0.5mm solid #000 !important;
+      border-radius: 1mm !important;
+      margin-bottom: 1.5mm !important;
+      background: white !important;
+      font-size: 12pt !important;
+      color: #000 !important;
+    }
+    .label-print .lbl-lv .lv-num {
+      font-size: 20pt !important;
+      font-weight: 900 !important;
+      text-align: center !important;
+      color: #000 !important;
+    }
+    .label-print .lbl-lv .lv-name {
+      font-size: 12pt !important;
+      font-weight: 800 !important;
+      color: #000 !important;
+      line-height: 1.2 !important;
+    }
+    .label-print .lbl-lv .lv-date {
+      text-align: right !important;
+      font-weight: 900 !important;
+      font-size: 13pt !important;
+      color: #000 !important;
+    }
+    .label-print .lbl-lv.passed {
+      background: white !important;
+      border-style: dashed !important;
+      text-decoration: line-through !important;
+      color: #555 !important;
+    }
+    .label-print .lbl-lv.passed * {
+      color: #555 !important;
+    }
+
+    /* ============ Footer: QR + meta centered ============ */
+    .label-print .lbl-foot {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      gap: 1.5mm !important;
+      margin-top: 2mm !important;
+      padding-top: 2mm !important;
+      border-top: 0.4mm dashed #000 !important;
+      text-align: center !important;
+    }
+    .label-print .lbl-foot .qr {
+      margin: 0 auto !important;
+    }
+    .label-print .lbl-foot .qr canvas,
+    .label-print .lbl-foot .qr img {
+      display: block !important;
+      width: 28mm !important;
+      height: 28mm !important;
+      margin: 0 auto !important;
+    }
+    .label-print .lbl-foot .meta {
+      font-size: 10pt !important;
+      font-weight: 700 !important;
+      color: #000 !important;
+      line-height: 1.3 !important;
+      margin-top: 1mm !important;
+    }
+    .label-print .lbl-foot .meta b {
+      color: #000 !important;
+    }
   }
 </style>
 </head>
@@ -488,8 +664,8 @@
 
   <!-- Step 4: Label (small sticker for durian) -->
   <section id="step-label" class="card label-card hidden">
-    <span class="step-label no-print">พร้อมพิมพ์ - ขนาดสติกเกอร์เล็ก</span>
-    <p class="hint no-print">สติกเกอร์ขนาดประมาณ 60×90mm แปะที่ก้านทุเรียน — แสดงทั้ง 3 ระดับให้ลูกค้าเลือกวันที่จะกินเอง</p>
+    <span class="step-label no-print">พร้อมพิมพ์ - POS Handheld 58mm</span>
+    <p class="hint no-print">ออกแบบสำหรับเครื่องพิมพ์ความร้อน POS handheld 58mm — ตัวอักษรใหญ่ ตัวหนา อ่านง่ายบนกระดาษม้วน แสดงทั้ง 3 ระดับให้ลูกค้าเลือกวันที่จะกินเอง</p>
     <div class="label-print" id="label-content">
       <div class="lbl-head">
         <h3>🥭 ทุเรียน — ตารางทาน</h3>
