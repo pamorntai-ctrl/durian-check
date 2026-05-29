@@ -242,6 +242,90 @@
     transition: width 0.5s;
   }
   .hidden { display: none !important; }
+
+  /* ============ Calibration UI ============ */
+  .calib-banner {
+    background: linear-gradient(135deg, #fff8dc 0%, #fdf3c4 100%);
+    border: 2px solid var(--yellow-dark);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 10px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .calib-banner:active { transform: scale(0.98); }
+  .calib-banner.done {
+    background: #e8f5d9;
+    border-color: var(--green-dark);
+  }
+  .calib-banner-icon { font-size: 26px; }
+  .calib-banner-body { flex: 1; }
+  .calib-banner-title { font-weight: 800; font-size: 15px; color: var(--brown); }
+  .calib-banner.done .calib-banner-title { color: var(--green-dark); }
+  .calib-banner-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .calib-banner-arrow { font-size: 20px; color: var(--muted); }
+
+  .calib-row {
+    background: #fafafa;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .calib-row.done {
+    background: #e8f5d9;
+    border-color: var(--green);
+  }
+  .calib-row-icon {
+    font-size: 36px;
+    flex: 0 0 auto;
+    width: 50px; text-align: center;
+  }
+  .calib-row-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .calib-row-title {
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .calib-row-status {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .calib-row.done .calib-row-status {
+    color: var(--green-dark);
+    font-weight: 700;
+  }
+  .calib-mic-small {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    user-select: none;
+    flex: 0 0 auto;
+  }
+  .calib-mic-small.recording {
+    animation: pulse 1.2s infinite;
+    background: #e74c3c;
+  }
+  .calib-mic-small.done {
+    background: var(--green);
+  }
   /* Sticker label - sized for thermal sticker printer (~60x90mm) */
   .label-print {
     border: 2px dashed #999;
@@ -547,6 +631,16 @@
     <h2>ตรวจทุเรียนของคุณ</h2>
     <p class="hint">ใช้กล้องถ่ายเปลือกทุเรียน + เคาะฟังเสียง ระบบจะบอกระดับความสุกและวันที่ควรทาน</p>
 
+    <!-- Calibration banner -->
+    <div id="calib-banner" class="calib-banner" onclick="goStep('calibration')">
+      <div class="calib-banner-icon">🎚️</div>
+      <div class="calib-banner-body">
+        <div class="calib-banner-title" id="calib-banner-title">ปรับเทียบเครื่อง (แนะนำก่อนใช้ครั้งแรก)</div>
+        <div class="calib-banner-sub" id="calib-banner-sub">บันทึกเสียงเคาะของแข็ง เพื่อให้ระบบรู้จักเครื่อง + ไม้เคาะของคุณ</div>
+      </div>
+      <div class="calib-banner-arrow">›</div>
+    </div>
+
     <div style="margin: 12px 0 16px;">
       <div style="font-weight:700; margin-bottom:6px;">เลือกโหมดการตรวจ:</div>
       <label class="mode-card" style="display:block; padding:10px 12px; border-radius:10px; border:2px solid var(--green); background:#f0f8e8; margin-bottom:8px; cursor:pointer;">
@@ -587,6 +681,44 @@
       <div class="confidence-bar" id="load-bar" style="width:30%; background:linear-gradient(90deg,var(--green),var(--yellow));">โปรดรอ 5-10 วินาที</div>
     </div>
     <div id="load-err" class="err hidden" style="margin-top:12px;"></div>
+  </section>
+
+  <!-- Calibration Step -->
+  <section id="step-calibration" class="card hidden">
+    <span class="step-label">🎚️ ปรับเทียบเครื่อง</span>
+    <h2>ปรับเทียบไมโครโฟน + เครื่องมือเคาะ</h2>
+    <p class="hint">มือถือและเครื่องมือเคาะแต่ละแบบมีเสียงต่างกัน ปรับเทียบครั้งเดียวเก็บไว้ใช้กับทุเรียนทุกลูก</p>
+
+    <!-- HARD reference -->
+    <div id="calib-hard-row" class="calib-row">
+      <div class="calib-row-icon">🪨</div>
+      <div class="calib-row-info">
+        <div class="calib-row-title">1. เคาะของแข็ง <span style="color:var(--red); font-size:13px;">(จำเป็น)</span></div>
+        <div class="calib-row-status" id="calib-hard-status">ยังไม่ได้บันทึก — กดค้างปุ่มไมค์</div>
+      </div>
+      <div id="calib-hard-mic" class="calib-mic-small">🎙️</div>
+    </div>
+    <p class="hint" style="margin-top:-4px; font-size:12px;">ตัวอย่าง: เคาะขอบโต๊ะไม้ ผนัง ปูน หินแกรนิต — ของแข็งใด ๆ ที่ทำให้เสียงแน่นที่สุด</p>
+
+    <!-- SOFT reference (optional) -->
+    <div id="calib-soft-row" class="calib-row" style="margin-top:14px;">
+      <div class="calib-row-icon">📦</div>
+      <div class="calib-row-info">
+        <div class="calib-row-title">2. เคาะของกลวง <span style="color:var(--muted); font-size:13px;">(ทางเลือก)</span></div>
+        <div class="calib-row-status" id="calib-soft-status">ยังไม่ได้บันทึก — เพิ่มความแม่น</div>
+      </div>
+      <div id="calib-soft-mic" class="calib-mic-small">🎙️</div>
+    </div>
+    <p class="hint" style="margin-top:-4px; font-size:12px;">ตัวอย่าง: เคาะกล่องเปล่า ขวดพลาสติกเปล่า — ของกลวงที่ทำให้เสียงทุ้มที่สุด</p>
+
+    <canvas id="calib-viz" class="audio-viz" style="margin-top:16px;"></canvas>
+    <div id="calib-msg" class="mic-status">กดปุ่มไมค์ค้างไว้ แล้วเคาะ 3-5 ครั้ง ปล่อยเมื่อเสร็จ</div>
+    <div id="calib-err" class="err hidden"></div>
+
+    <div class="row" style="display:flex; gap:10px; margin-top:12px;">
+      <button class="big gray" onclick="goStep('home')">◀ กลับ</button>
+      <button class="big" onclick="clearCalibration()" style="background:#888;">🔄 รีเซ็ต</button>
+    </div>
   </section>
 
   <!-- Step 1: Camera (cycles 3 times: stem, body, bottom) -->
@@ -700,6 +832,10 @@ window.addEventListener('error', function(e) {
   document.body.appendChild(box);
 });
 
+window.addEventListener('DOMContentLoaded', function() {
+  if (typeof renderCalibBanner === 'function') renderCalibBanner();
+});
+
 /* ============ State ============ */
 const PHOTO_STEPS = [
   {
@@ -757,7 +893,7 @@ function updateMode() {
 }
 
 /* ============ Navigation ============ */
-const STEPS = ['home','camera','photo-confirm','mic','loading','result','label'];
+const STEPS = ['home','calibration','camera','photo-confirm','mic','loading','result','label'];
 function goStep(name) {
   STEPS.forEach(s => {
     const el = document.getElementById('step-'+s);
@@ -768,6 +904,8 @@ function goStep(name) {
   else stopCamera();
   if (name === 'photo-confirm') renderConfirmUI();
   if (name === 'mic') setupMic();
+  if (name === 'calibration') setupCalibration();
+  if (name === 'home') renderCalibBanner();
   if (name === 'result') renderResult();
   if (name === 'label') renderLabel();
   window.scrollTo(0,0);
@@ -961,6 +1099,189 @@ function analyzePhotoColor(ctx, width, height) {
   return { riperScore: score, hue, sat, val, brownRatio, r, g, b };
 }
 
+/* ============ Calibration ============ */
+const CALIB_KEY = 'durian_calibration_v1';
+
+function getCalibration() {
+  try {
+    const raw = localStorage.getItem(CALIB_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveCalibrationItem(type, data) {
+  const calib = getCalibration();
+  calib[type] = { ...data, timestamp: Date.now() };
+  localStorage.setItem(CALIB_KEY, JSON.stringify(calib));
+}
+
+function clearCalibration() {
+  if (!confirm('ลบข้อมูลปรับเทียบทั้งหมด?')) return;
+  localStorage.removeItem(CALIB_KEY);
+  renderCalibBanner();
+  renderCalibrationUI();
+}
+
+function fmtCalibDate(ts) {
+  const d = new Date(ts);
+  return d.getDate() + '/' + (d.getMonth()+1) + '/' + ((d.getFullYear()+543) % 100);
+}
+
+function renderCalibBanner() {
+  const calib = getCalibration();
+  const banner = document.getElementById('calib-banner');
+  if (!banner) return;
+  const hasHard = !!calib.hard;
+  const hasSoft = !!calib.soft;
+  banner.classList.toggle('done', hasHard);
+  const title = document.getElementById('calib-banner-title');
+  const sub = document.getElementById('calib-banner-sub');
+  if (hasHard && hasSoft) {
+    title.textContent = '✓ ปรับเทียบครบแล้ว (hard + soft)';
+    sub.textContent = `บันทึก: ${fmtCalibDate(calib.hard.timestamp)} • แตะเพื่อปรับใหม่`;
+  } else if (hasHard) {
+    title.textContent = '✓ ปรับเทียบแล้ว (hard)';
+    sub.textContent = `${fmtCalibDate(calib.hard.timestamp)} • แตะเพื่อเพิ่ม soft reference`;
+  } else {
+    title.textContent = 'ปรับเทียบเครื่อง (แนะนำก่อนใช้ครั้งแรก)';
+    sub.textContent = 'บันทึกเสียงเคาะของแข็ง เพื่อให้ระบบรู้จักเครื่อง + ไม้เคาะของคุณ';
+  }
+}
+
+function renderCalibrationUI() {
+  const calib = getCalibration();
+  // Hard
+  const hardRow = document.getElementById('calib-hard-row');
+  const hardMic = document.getElementById('calib-hard-mic');
+  const hardStatus = document.getElementById('calib-hard-status');
+  if (calib.hard) {
+    hardRow.classList.add('done');
+    hardMic.classList.add('done');
+    hardMic.textContent = '✓';
+    hardStatus.textContent = `${calib.hard.avgFreq.toFixed(0)} Hz, low ${(calib.hard.lowRatio*100).toFixed(0)}% (${fmtCalibDate(calib.hard.timestamp)})`;
+  } else {
+    hardRow.classList.remove('done');
+    hardMic.classList.remove('done');
+    hardMic.textContent = '🎙️';
+    hardStatus.textContent = 'ยังไม่ได้บันทึก — กดค้างปุ่มไมค์';
+  }
+  // Soft
+  const softRow = document.getElementById('calib-soft-row');
+  const softMic = document.getElementById('calib-soft-mic');
+  const softStatus = document.getElementById('calib-soft-status');
+  if (calib.soft) {
+    softRow.classList.add('done');
+    softMic.classList.add('done');
+    softMic.textContent = '✓';
+    softStatus.textContent = `${calib.soft.avgFreq.toFixed(0)} Hz, low ${(calib.soft.lowRatio*100).toFixed(0)}% (${fmtCalibDate(calib.soft.timestamp)})`;
+  } else {
+    softRow.classList.remove('done');
+    softMic.classList.remove('done');
+    softMic.textContent = '🎙️';
+    softStatus.textContent = 'ยังไม่ได้บันทึก — เพิ่มความแม่น';
+  }
+}
+
+let calibAudioStream = null, calibAudioCtx = null, calibAnalyser = null, calibDataArray = null;
+let calibVizRaf = null, calibRecording = false;
+let calibFreqs = [], calibLowRatios = [];
+
+function setupCalibration() {
+  renderCalibrationUI();
+  document.getElementById('calib-err').classList.add('hidden');
+  document.getElementById('calib-msg').textContent = 'กดปุ่มไมค์ค้างไว้ แล้วเคาะ 3-5 ครั้ง ปล่อยเมื่อเสร็จ';
+  bindCalibMic('hard');
+  bindCalibMic('soft');
+}
+
+function bindCalibMic(type) {
+  const mic = document.getElementById('calib-' + type + '-mic');
+  if (!mic) return;
+  const start = async (e) => {
+    e.preventDefault();
+    if (calibRecording) return;
+    try {
+      calibAudioStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+      });
+    } catch (err) {
+      const errEl = document.getElementById('calib-err');
+      errEl.textContent = '❌ เปิดไมค์ไม่ได้: ' + (err.message || err.name);
+      errEl.classList.remove('hidden');
+      return;
+    }
+    calibRecording = true;
+    calibFreqs = [];
+    calibLowRatios = [];
+    mic.classList.add('recording');
+    document.getElementById('calib-msg').textContent =
+      '🔴 กำลังบันทึก (' + (type === 'hard' ? 'ของแข็ง' : 'ของกลวง') + ') — เคาะต่อ...';
+    calibAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = calibAudioCtx.createMediaStreamSource(calibAudioStream);
+    calibAnalyser = calibAudioCtx.createAnalyser();
+    calibAnalyser.fftSize = 2048;
+    src.connect(calibAnalyser);
+    calibDataArray = new Uint8Array(calibAnalyser.frequencyBinCount);
+    calibVizLoop();
+  };
+  const stop = (e) => {
+    e && e.preventDefault();
+    if (!calibRecording) return;
+    calibRecording = false;
+    mic.classList.remove('recording');
+    cancelAnimationFrame(calibVizRaf);
+    if (calibAudioStream) calibAudioStream.getTracks().forEach(t => t.stop());
+    if (calibAudioCtx) calibAudioCtx.close();
+    if (calibFreqs.length < 3) {
+      document.getElementById('calib-msg').textContent = '⚠️ บันทึกได้น้อยเกินไป (' + calibFreqs.length + ' เฟรม) — ลองใหม่';
+      return;
+    }
+    const avgFreq = calibFreqs.reduce((a,b)=>a+b,0) / calibFreqs.length;
+    const lowRatio = calibLowRatios.reduce((a,b)=>a+b,0) / calibLowRatios.length;
+    saveCalibrationItem(type, { avgFreq, lowRatio, samples: calibFreqs.length });
+    document.getElementById('calib-msg').textContent =
+      '✅ บันทึก ' + (type === 'hard' ? 'ของแข็ง' : 'ของกลวง') + ' สำเร็จ: ' + avgFreq.toFixed(0) + ' Hz';
+    renderCalibrationUI();
+    renderCalibBanner();
+  };
+  mic.onmousedown = start;
+  mic.onmouseup = stop;
+  mic.onmouseleave = stop;
+  mic.ontouchstart = start;
+  mic.ontouchend = stop;
+  mic.ontouchcancel = stop;
+}
+
+function calibVizLoop() {
+  if (!calibRecording) return;
+  calibAnalyser.getByteFrequencyData(calibDataArray);
+  let maxV=0, maxI=0, lowEnergy=0, totalEnergy=0;
+  const binHz = calibAudioCtx.sampleRate / calibAnalyser.fftSize;
+  for (let i=1;i<calibDataArray.length;i++) {
+    const v = calibDataArray[i];
+    totalEnergy += v;
+    if (i*binHz < 500) lowEnergy += v;
+    if (v > maxV) { maxV = v; maxI = i; }
+  }
+  if (maxV > 30) {
+    calibFreqs.push(maxI * binHz);
+    calibLowRatios.push(totalEnergy > 0 ? lowEnergy / totalEnergy : 0);
+  }
+  const c = document.getElementById('calib-viz');
+  const ctx = c.getContext('2d');
+  const W = c.width = c.clientWidth, H = c.height = c.clientHeight;
+  ctx.fillStyle = '#f0f0f0'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#6b8e23';
+  const bars = 64;
+  const step = Math.floor(calibDataArray.length / bars);
+  for (let i=0;i<bars;i++) {
+    const v = calibDataArray[i*step];
+    const h = (v/255) * H;
+    ctx.fillRect(i*(W/bars), H-h, (W/bars)-1, h);
+  }
+  calibVizRaf = requestAnimationFrame(calibVizLoop);
+}
+
 /* ============ Microphone ============ */
 let audioStream = null, audioCtx = null, analyser = null, dataArray = null, vizRaf = null;
 let collectedFreqs = []; // dominant freqs over time
@@ -1057,13 +1378,41 @@ function analyzeAudio(freqs, lowRatios) {
   if (!freqs.length) return { riperScore: 0.5, avgFreq: 0, lowRatio: 0, samples: 0 };
   const avgFreq = freqs.reduce((a,b)=>a+b,0) / freqs.length;
   const avgLow = lowRatios.reduce((a,b)=>a+b,0) / lowRatios.length;
-  // Score 0..1, higher = riper
-  // Lower avg freq -> riper. Map: 800Hz->0, 100Hz->1
-  let freqScore = 1 - Math.min(1, Math.max(0, (avgFreq - 100) / 700));
-  // More low-freq energy ratio -> riper
-  let lowScore = Math.min(1, avgLow * 1.4);
+
+  const calib = getCalibration();
+  let freqScore, lowScore;
+
+  if (calib.hard && calib.soft) {
+    // Have both references — interpolate position between them
+    // hard.avgFreq = high freq, soft.avgFreq = low freq
+    // Map durian freq to 0..1 where 0 = hard, 1 = soft (riper)
+    const hardF = calib.hard.avgFreq, softF = calib.soft.avgFreq;
+    const range = Math.abs(hardF - softF) || 100;
+    freqScore = Math.min(1, Math.max(0, (hardF - avgFreq) / range));
+    const hardL = calib.hard.lowRatio, softL = calib.soft.lowRatio;
+    const lowRange = Math.abs(softL - hardL) || 0.1;
+    lowScore = Math.min(1, Math.max(0, (avgLow - hardL) / lowRange));
+  } else if (calib.hard) {
+    // Only hard reference — score by how much hollower than hard
+    const hardF = calib.hard.avgFreq;
+    // If durian is 50% of hard freq → very hollow (score ~1)
+    freqScore = Math.min(1, Math.max(0, (hardF - avgFreq) / hardF));
+    const hardL = calib.hard.lowRatio;
+    lowScore = Math.min(1, Math.max(0, (avgLow - hardL) / Math.max(0.05, 1 - hardL)));
+  } else {
+    // No calibration — use absolute thresholds (fallback)
+    freqScore = 1 - Math.min(1, Math.max(0, (avgFreq - 100) / 700));
+    lowScore = Math.min(1, avgLow * 1.4);
+  }
+
   const score = freqScore * 0.55 + lowScore * 0.45;
-  return { riperScore: score, avgFreq, lowRatio: avgLow, samples: freqs.length };
+  return {
+    riperScore: score,
+    avgFreq,
+    lowRatio: avgLow,
+    samples: freqs.length,
+    calibrated: !!calib.hard
+  };
 }
 
 /* ============ Analyze & Result ============ */
@@ -1098,6 +1447,7 @@ function dataUrlToBase64(dataUrl) {
 }
 
 async function callGeminiAPI() {
+  const calib = getCalibration();
   const payload = {
     photos: {
       stem: dataUrlToBase64(state.photos.stem),
@@ -1108,6 +1458,10 @@ async function callGeminiAPI() {
       avgFreq: state.audioAnalysis.avgFreq || 0,
       lowRatio: state.audioAnalysis.lowRatio || 0,
       samples: state.audioAnalysis.samples || 0,
+      calibration: (calib.hard || calib.soft) ? {
+        hard: calib.hard ? { avgFreq: calib.hard.avgFreq, lowRatio: calib.hard.lowRatio } : null,
+        soft: calib.soft ? { avgFreq: calib.soft.avgFreq, lowRatio: calib.soft.lowRatio } : null,
+      } : null,
     },
   };
   const msg = document.getElementById('loading-msg');
@@ -1319,11 +1673,17 @@ function renderResult() {
       : `${s.badge}<br>${a ? (a.riperScore*100).toFixed(0) + '%' : '-'}`;
     return `<figure><img src="${img}" alt="${s.key}"><figcaption>${caption}</figcaption></figure>`;
   }).join('');
+  const calib = getCalibration();
+  const calibBadge = aa.calibrated || calib.hard
+    ? `<div style="color:var(--green-dark); font-weight:700;">🎚️ ใช้ค่าปรับเทียบ${calib.hard ? ' hard' : ''}${calib.soft ? '+soft' : ''}</div>`
+    : `<div style="color:#888;">⚠️ ยังไม่ได้ปรับเทียบ — <a href="#" onclick="goStep('calibration'); return false;" style="color:var(--green-dark);">ปรับเทียบเพื่อความแม่นกว่า</a></div>`;
   const detail = ai
     ? `<div>🤖 Gemini AI: confidence ${(ai.confidence*100).toFixed(0)}% | ความแก่ ${(ai.maturity_score*100).toFixed(0)}% | ความสุก ${(ai.ripeness_score*100).toFixed(0)}%</div>` +
-      `<div>🔊 เสียง: ${aa.avgFreq.toFixed(0)} Hz, low-energy ${(aa.lowRatio*100).toFixed(0)}%, ${aa.samples} เฟรม</div>`
+      `<div>🔊 เสียง: ${aa.avgFreq.toFixed(0)} Hz, low-energy ${(aa.lowRatio*100).toFixed(0)}%, ${aa.samples} เฟรม</div>` +
+      calibBadge
     : `<div>📷 ภาพรวม: ${(combinedPhotoScore()*100).toFixed(0)}% (ขั้ว 45% / เปลือก 35% / ก้น 20%)</div>` +
-      `<div>🔊 เสียง: ${(aa.riperScore*100).toFixed(0)}% (ความถี่เฉลี่ย ${aa.avgFreq.toFixed(0)} Hz, ${aa.samples} เฟรม)</div>`;
+      `<div>🔊 เสียง: ${(aa.riperScore*100).toFixed(0)}% (ความถี่เฉลี่ย ${aa.avgFreq.toFixed(0)} Hz, ${aa.samples} เฟรม)</div>` +
+      calibBadge;
   document.getElementById('scores').innerHTML =
     `<div class="photo-grid">${photoRows}</div>` +
     `<details${ai ? ' open' : ''}><summary>รายละเอียดการวัด</summary>${detail}</details>`;

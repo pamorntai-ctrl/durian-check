@@ -10,6 +10,10 @@ interface AnalyzeRequest {
     avgFreq: number;
     lowRatio: number;
     samples: number;
+    calibration?: {
+      hard?: { avgFreq: number; lowRatio: number } | null;
+      soft?: { avgFreq: number; lowRatio: number } | null;
+    } | null;
   };
 }
 
@@ -175,11 +179,33 @@ export async function handleAnalyze(request: Request, env: Env): Promise<Respons
     return jsonResponse({ error: "Missing audio data" }, 400);
   }
 
+  // Build calibration context if available
+  let calibText = "";
+  const cal = body.audio.calibration;
+  if (cal && (cal.hard || cal.soft)) {
+    calibText = `\n\n📐 ข้อมูลปรับเทียบเครื่องของผู้ใช้ (Calibration Reference):\n`;
+    if (cal.hard) {
+      calibText += `- เคาะของแข็ง: ${cal.hard.avgFreq.toFixed(0)} Hz, low-energy ${(cal.hard.lowRatio*100).toFixed(0)}%\n`;
+    }
+    if (cal.soft) {
+      calibText += `- เคาะของกลวง: ${cal.soft.avgFreq.toFixed(0)} Hz, low-energy ${(cal.soft.lowRatio*100).toFixed(0)}%\n`;
+    }
+    calibText += `\nให้เปรียบเทียบเสียงเคาะทุเรียนกับ baseline นี้แทนใช้ค่ามาตรฐาน — `;
+    if (cal.hard && cal.soft) {
+      calibText += `ถ้าเสียงทุเรียนใกล้ "ของแข็ง" = แน่น/ดิบ/อ่อน, ใกล้ "ของกลวง" = กลวง/แก่/สุก`;
+    } else if (cal.hard) {
+      calibText += `ความถี่ทุเรียนต่ำกว่าของแข็งมากเท่าไหร่ = กลวง/แก่/สุกมากเท่านั้น`;
+    }
+  } else {
+    calibText = `\n\n(ไม่มีข้อมูลปรับเทียบ — ใช้ค่ามาตรฐานในรูบริค)`;
+  }
+
   const userText =
     `ข้อมูลเสียงเคาะทุเรียน:\n` +
     `- ความถี่เฉลี่ย: ${body.audio.avgFreq.toFixed(0)} Hz\n` +
     `- สัดส่วนพลังงานความถี่ต่ำ (<500Hz): ${(body.audio.lowRatio * 100).toFixed(0)}%\n` +
-    `- จำนวนเฟรมที่บันทึก: ${body.audio.samples}\n\n` +
+    `- จำนวนเฟรมที่บันทึก: ${body.audio.samples}` +
+    calibText + `\n\n` +
     `ภาพ 3 ภาพแนบมาด้วย (ขั้ว / เปลือก / ก้น ตามลำดับ)\n` +
     `วิเคราะห์ตามรูบริค ตอบ JSON ตาม schema`;
 
