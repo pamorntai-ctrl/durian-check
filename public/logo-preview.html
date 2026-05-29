@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Durian Express — Logo Variants</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;0,800;1,700&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+    background: #FBF7F0;
+    color: #2D2D2D;
+    line-height: 1.5;
+    padding: 24px;
+  }
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: #3D5A28;
+    margin-bottom: 8px;
+  }
+  p.intro { color: #6B6B6B; margin-bottom: 32px; max-width: 600px; }
+  .container { max-width: 960px; margin: 0 auto; }
+  section {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 14px rgba(43, 30, 8, 0.06);
+  }
+  section h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 22px;
+    color: #3D5A28;
+    margin-bottom: 8px;
+  }
+  section .desc {
+    font-size: 14px;
+    color: #6B6B6B;
+    margin-bottom: 20px;
+  }
+  .preview-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  .preview-row.white { background: white; border: 1px dashed #ddd; }
+  .preview-row.cream { background: #FBF7F0; }
+  .preview-row.dark { background: #2D2D2D; }
+  .preview-row.dark img { filter: brightness(0) invert(1); }
+  .preview-row.green { background: #3D5A28; }
+  .preview-row.green img { filter: brightness(0) invert(1); }
+  .size-label {
+    display: inline-block;
+    background: #EDE6D3;
+    color: #6B6B6B;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .download-bar {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #EDE6D3;
+  }
+  .download-bar a {
+    padding: 8px 14px;
+    background: #6B8E23;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .download-bar a:hover { background: #556b1d; }
+  .download-bar a.outline {
+    background: white;
+    color: #3D5A28;
+    border: 2px solid #6B8E23;
+  }
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+  }
+  .swatch {
+    border-radius: 10px;
+    padding: 16px;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .swatch code {
+    display: block;
+    margin-top: 4px;
+    font-family: monospace;
+    opacity: 0.85;
+  }
+  .swatch.light { color: #2D2D2D; }
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    text-align: center;
+  }
+  .icon-cell {
+    padding: 16px;
+    border-radius: 12px;
+    background: #FBF7F0;
+  }
+  .icon-cell .lbl { font-size: 11px; color: #6B6B6B; margin-top: 8px; font-weight: 700; }
+  footer {
+    text-align: center;
+    color: #6B6B6B;
+    font-size: 13px;
+    margin-top: 32px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🥭 Durian Express — Logo Kit</h1>
+  <p class="intro">4 variants ของ logo สำหรับ marketplace: full color, icon only, monochrome (print), favicon. ทั้งหมดเป็น SVG — scale ได้ทุกขนาดไม่เสีย</p>
+
+  <!-- ============ Primary Logo ============ -->
+  <section>
+    <span class="size-label">PRIMARY · 600 × 200</span>
+    <h2>Full Logo</h2>
+    <p class="desc">โลโก้หลัก — ใช้ใน header, marketing, landing page, sticker</p>
+
+    <div class="preview-row white">
+      <img src="/logo.svg" alt="Durian Express" style="height: 100px;">
+    </div>
+    <div class="preview-row cream">
+      <img src="/logo.svg" alt="Durian Express on cream" style="height: 100px;">
+    </div>
+    <div class="preview-row" style="background: #E8F1DA;">
+      <img src="/logo.svg" alt="Durian Express on mint" style="height: 100px;">
+    </div>
+
+    <div class="download-bar">
+      <a href="/logo.svg" download="durian-express-logo.svg">⬇ Download SVG</a>
+      <a href="/logo.svg" target="_blank" class="outline">↗ Open in new tab</a>
+    </div>
+  </section>
+
+  <!-- ============ Icon Only ============ -->
+  <section>
+    <span class="size-label">ICON · 200 × 200</span>
+    <h2>Icon Only</h2>
+    <p class="desc">ใช้สำหรับ app icon, avatar, profile, compact header</p>
+
+    <div class="icon-grid">
+      <div class="icon-cell">
+        <img src="/logo-icon.svg" style="width: 128px; height: 128px;">
+        <div class="lbl">128px</div>
+      </div>
+      <div class="icon-cell">
+        <img src="/logo-icon.svg" style="width: 80px; height: 80px;">
+        <div class="lbl">80px</div>
+      </div>
+      <div class="icon-cell">
+        <img src="/logo-icon.svg" style="width: 48px; height: 48px;">
+        <div class="lbl">48px</div>
+      </div>
+      <div class="icon-cell">
+        <img src="/logo-icon.svg" style="width: 32px; height: 32px;">
+        <div class="lbl">32px</div>
+      </div>
+    </div>
+
+    <div class="download-bar">
+      <a href="/logo-icon.svg" download="durian-express-icon.svg">⬇ Download SVG</a>
+      <a href="/logo-icon.svg" target="_blank" class="outline">↗ Open</a>
+    </div>
+  </section>
+
+  <!-- ============ Favicon ============ -->
+  <section>
+    <span class="size-label">FAVICON · 64 × 64</span>
+    <h2>Favicon</h2>
+    <p class="desc">รูปย่อสำหรับ browser tab + app icon บนมือถือ (รูปเรียบกว่า icon หลัก เพื่ออ่านง่ายตอนเล็ก)</p>
+
+    <div class="icon-grid">
+      <div class="icon-cell">
+        <img src="/favicon.svg" style="width: 64px; height: 64px;">
+        <div class="lbl">64px</div>
+      </div>
+      <div class="icon-cell">
+        <img src="/favicon.svg" style="width: 32px; height: 32px;">
+        <div class="lbl">32px</div>
+      </div>
+      <div class="icon-cell">
+        <img src="/favicon.svg" style="width: 16px; height: 16px;">
+        <div class="lbl">16px</div>
+      </div>
+      <div class="icon-cell" style="background: #2D2D2D;">
+        <img src="/favicon.svg" style="width: 32px; height: 32px;">
+        <div class="lbl" style="color: #ccc;">on dark</div>
+      </div>
+    </div>
+
+    <div class="download-bar">
+      <a href="/favicon.svg" download="favicon.svg">⬇ Download SVG</a>
+    </div>
+  </section>
+
+  <!-- ============ Monochrome ============ -->
+  <section>
+    <span class="size-label">MONOCHROME · POS Print</span>
+    <h2>Monochrome</h2>
+    <p class="desc">single-color version — ใช้สำหรับ thermal printer 58mm (POS handheld), embossed, stamp, watermark</p>
+
+    <div class="preview-row white">
+      <img src="/logo-mono.svg" alt="Durian Express monochrome" style="height: 100px;">
+    </div>
+
+    <div class="download-bar">
+      <a href="/logo-mono.svg" download="durian-express-mono.svg">⬇ Download SVG</a>
+      <a href="/logo-mono.svg" target="_blank" class="outline">↗ Open</a>
+    </div>
+  </section>
+
+  <!-- ============ On Dark Background ============ -->
+  <section>
+    <span class="size-label">REVERSED</span>
+    <h2>On Dark Background</h2>
+    <p class="desc">โลโก้บนพื้นสีเข้ม (ใช้ filter invert ใน CSS หรือสร้าง version พิเศษ)</p>
+
+    <div class="preview-row dark">
+      <img src="/logo.svg" alt="Durian Express on dark" style="height: 100px;">
+    </div>
+    <div class="preview-row green">
+      <img src="/logo.svg" alt="Durian Express on green" style="height: 100px;">
+    </div>
+  </section>
+
+  <!-- ============ Color System ============ -->
+  <section>
+    <span class="size-label">DESIGN TOKENS</span>
+    <h2>Brand Colors</h2>
+    <p class="desc">สีที่ใช้ใน logo — ตรงกับ design system ใน style.md</p>
+
+    <div class="swatch-grid">
+      <div class="swatch" style="background: #3D5A28;">Green Deep<code>#3D5A28</code></div>
+      <div class="swatch" style="background: #6B8E23;">Green Leaf<code>#6B8E23</code></div>
+      <div class="swatch light" style="background: #C8C870;">Olive Light<code>#C8C870</code></div>
+      <div class="swatch" style="background: #8B5A2B;">Brown Stem<code>#8B5A2B</code></div>
+      <div class="swatch" style="background: #E8624D;">Coral CTA<code>#E8624D</code></div>
+      <div class="swatch light" style="background: #FBF7F0;">Cream BG<code>#FBF7F0</code></div>
+    </div>
+  </section>
+
+  <!-- ============ Usage Guide ============ -->
+  <section>
+    <span class="size-label">USAGE</span>
+    <h2>Usage Examples</h2>
+
+    <pre style="background: #2D2D2D; color: #f0f0f0; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6;">
+&lt;!-- ใน header --&gt;
+&lt;img src="/logo.svg" alt="Durian Express" height="48"&gt;
+
+&lt;!-- ใน favicon --&gt;
+&lt;link rel="icon" href="/favicon.svg" type="image/svg+xml"&gt;
+
+&lt;!-- ใน sticker print (monochrome) --&gt;
+@media print {
+  .label-print .logo {
+    content: url('/logo-mono.svg');
+    height: 12mm;
+  }
+}
+
+&lt;!-- บนพื้นหลังสีเข้ม --&gt;
+&lt;img src="/logo.svg" style="filter: brightness(0) invert(1);"&gt;</pre>
+  </section>
+
+  <footer>
+    🥭 Durian Express — Logo Kit · SVG files in <code>public/</code>
+    <br>
+    <a href="/" style="color: #3D5A28; text-decoration: underline; margin-top: 8px; display: inline-block;">◀ กลับไปแอปตรวจทุเรียน</a>
+  </footer>
+</div>
+</body>
+</html>
