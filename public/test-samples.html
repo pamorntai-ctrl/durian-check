@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตัวอย่างทุเรียน 3 แบบ - เทสกล้อง</title>
+<style>
+  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0; padding: 20px;
+    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+    background: #f5f5f5;
+    color: #2d2d2d;
+  }
+  header {
+    background: linear-gradient(135deg, #6b8e23, #556b1d);
+    color: white; padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  header h1 { margin: 0 0 8px; font-size: 26px; }
+  header p { margin: 4px 0; font-size: 14px; opacity: 0.95; }
+  .case {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border-left: 6px solid;
+  }
+  .case.young { border-color: #c0392b; }
+  .case.medium { border-color: #d4a017; }
+  .case.mature { border-color: #6b8e23; }
+  .case h2 { margin: 0 0 4px; font-size: 22px; }
+  .case.young h2 { color: #6e1a14; }
+  .case.medium h2 { color: #8b4513; }
+  .case.mature h2 { color: #556b1d; }
+  .case .expect {
+    background: #f0f0f0; padding: 10px 14px; border-radius: 8px;
+    font-size: 14px; margin: 10px 0 16px;
+  }
+  .case .expect b { color: #000; }
+  .samples {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 700px) {
+    .samples { grid-template-columns: 1fr; }
+  }
+  figure {
+    margin: 0;
+    background: #fafafa;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+  }
+  figure svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #ffffff;
+  }
+  figcaption {
+    padding: 10px 8px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #f0f0f0;
+  }
+  .nav {
+    text-align: center; margin: 20px 0;
+  }
+  .nav a {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #6b8e23;
+    color: white;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📸 ตัวอย่างทุเรียน 3 แบบ — สำหรับเทสกล้อง</h1>
+  <p>วิธีใช้: เปิดหน้านี้บนหน้าจอ Laptop/Tablet/มอนิเตอร์ แล้วใช้มือถืออีกเครื่องเปิดแอปเทส</p>
+  <p>หันกล้องมือถือมาส่องภาพในแต่ละช่องตามลำดับ (ขั้ว → เปลือก → ก้น)</p>
+</header>
+
+<!-- ================== USE CASE 1: YOUNG ================== -->
+<section class="case young">
+  <h2>1. ทุเรียนอ่อน 🥒 (Young - ตัดเร็วเกินไป)</h2>
+  <div class="expect">
+    <b>คาดหวังผล:</b> ความแก่ = อ่อน (young), ระดับที่ถึง = 1 เท่านั้น<br>
+    <b>คุณลักษณะ:</b> สีเขียวสดทั้งลูก, ขั้วเขียว, ก้นปิดสนิท, หนามแหลมตั้ง
+  </div>
+  <div class="samples">
+    <!-- STEM (young) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="y-stem-grad" cx="50%" cy="30%" r="60%">
+            <stop offset="0%" stop-color="#a8d27a"/>
+            <stop offset="100%" stop-color="#4a8533"/>
+          </radialGradient>
+          <linearGradient id="y-stem-rod" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#5fa83e"/>
+            <stop offset="100%" stop-color="#3d6a26"/>
+          </linearGradient>
+        </defs>
+        <rect width="300" height="300" fill="#f0f5ee"/>
+        <!-- Stem -->
+        <rect x="130" y="40" width="40" height="80" rx="6" fill="url(#y-stem-rod)" stroke="#2d4a1d" stroke-width="2"/>
+        <ellipse cx="150" cy="40" rx="22" ry="6" fill="#5fa83e" stroke="#2d4a1d" stroke-width="1.5"/>
+        <!-- Cut marks on top - fresh/green -->
+        <line x1="135" y1="38" x2="165" y2="38" stroke="#8bcc66" stroke-width="2"/>
+        <!-- Top of durian body below stem -->
+        <ellipse cx="150" cy="220" rx="120" ry="90" fill="url(#y-stem-grad)" stroke="#2d4a1d" stroke-width="2.5"/>
+        <!-- Spikes radiating from stem area -->
+        <g fill="#3d6a26" stroke="#2d4a1d" stroke-width="0.8">
+          <polygon points="60,160 50,140 70,148"/>
+          <polygon points="80,135 75,115 92,123"/>
+          <polygon points="105,118 105,98 122,108"/>
+          <polygon points="135,112 138,92 152,104"/>
+          <polygon points="165,112 178,92 168,104" transform="rotate(0,170,108)"/>
+          <polygon points="190,118 195,98 178,108"/>
+          <polygon points="215,135 220,115 203,123"/>
+          <polygon points="240,160 250,140 230,148"/>
+        </g>
+        <text x="150" y="285" text-anchor="middle" font-size="13" fill="#2d4a1d" font-weight="700">ขั้วเขียวสด อวบ ชุ่ม</text>
+      </svg>
+      <figcaption>🌱 ภาพ 1 — ขั้ว (Stem)</figcaption>
+    </figure>
+
+    <!-- BODY (young) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="y-body-grad" cx="40%" cy="40%" r="65%">
+            <stop offset="0%" stop-color="#9ec96a"/>
+            <stop offset="60%" stop-color="#5a9b3e"/>
+            <stop offset="100%" stop-color="#3d7c2a"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#f0f5ee"/>
+        <!-- Small stem on top -->
+        <rect x="138" y="20" width="24" height="22" rx="3" fill="#4a8533" stroke="#2d4a1d" stroke-width="1.5"/>
+        <!-- Body -->
+        <ellipse cx="150" cy="160" rx="110" ry="115" fill="url(#y-body-grad)" stroke="#2d4a1d" stroke-width="3"/>
+        <!-- Dense spike pattern - vivid green, tight -->
+        <g fill="#3d6a26" stroke="#2d4a1d" stroke-width="0.6">
+          <!-- top row -->
+          <polygon points="100,55 105,38 112,52"/>
+          <polygon points="125,48 130,30 140,46"/>
+          <polygon points="155,46 160,28 170,44"/>
+          <polygon points="180,48 185,30 195,46"/>
+          <polygon points="205,55 200,38 218,52"/>
+          <!-- second row -->
+          <polygon points="75,90 80,75 92,87"/>
+          <polygon points="110,82 115,65 125,80"/>
+          <polygon points="142,75 145,58 156,73"/>
+          <polygon points="175,75 180,58 188,73"/>
+          <polygon points="208,82 213,65 222,80"/>
+          <polygon points="240,90 245,75 230,87"/>
+          <!-- middle -->
+          <polygon points="60,140 65,120 78,135"/>
+          <polygon points="95,130 100,110 112,125"/>
+          <polygon points="200,125 205,108 218,125"/>
+          <polygon points="235,135 240,118 250,135"/>
+          <!-- lower -->
+          <polygon points="65,190 70,170 82,185"/>
+          <polygon points="100,210 105,195 115,210"/>
+          <polygon points="135,225 140,208 152,222"/>
+          <polygon points="165,225 170,208 180,222"/>
+          <polygon points="200,210 205,195 215,210"/>
+          <polygon points="235,190 240,170 222,185"/>
+          <!-- bottom -->
+          <polygon points="115,255 120,242 130,254"/>
+          <polygon points="145,260 150,245 162,258"/>
+          <polygon points="180,255 185,242 192,254"/>
+        </g>
+        <!-- Texture lines -->
+        <ellipse cx="125" cy="130" rx="25" ry="14" fill="none" stroke="#5a9b3e" stroke-width="1" opacity="0.5"/>
+      </svg>
+      <figcaption>🥭 ภาพ 2 — เปลือก (Body)</figcaption>
+    </figure>
+
+    <!-- BOTTOM (young) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="y-bot-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#7ab83a"/>
+            <stop offset="80%" stop-color="#3d7c2a"/>
+            <stop offset="100%" stop-color="#2d5a1d"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#f0f5ee"/>
+        <!-- Bottom view circle -->
+        <circle cx="150" cy="150" r="115" fill="url(#y-bot-grad)" stroke="#2d4a1d" stroke-width="3"/>
+        <!-- NO segment lines (closed - young) -->
+        <circle cx="150" cy="150" r="4" fill="#2d4a1d"/>
+        <!-- Spike pattern around perimeter (tight) -->
+        <g fill="#3d6a26" stroke="#2d4a1d" stroke-width="0.6">
+          <polygon points="100,55 105,38 115,52"/>
+          <polygon points="135,42 140,24 150,40"/>
+          <polygon points="170,42 175,24 185,40"/>
+          <polygon points="200,55 205,38 195,52"/>
+          <polygon points="60,100 65,80 75,98"/>
+          <polygon points="232,100 237,80 247,98"/>
+          <polygon points="50,145 55,128 68,143"/>
+          <polygon points="240,145 245,128 232,143"/>
+          <polygon points="60,200 65,180 75,195"/>
+          <polygon points="232,200 237,180 247,195"/>
+          <polygon points="100,245 105,228 115,243"/>
+          <polygon points="135,255 140,238 150,253"/>
+          <polygon points="170,255 175,238 185,253"/>
+          <polygon points="200,245 205,228 215,243"/>
+        </g>
+        <!-- inner texture/spikes pattern -->
+        <g fill="#3d6a26" opacity="0.6">
+          <polygon points="105,105 110,93 118,103"/>
+          <polygon points="180,100 185,88 193,98"/>
+          <polygon points="200,180 205,168 213,178"/>
+          <polygon points="100,200 105,188 113,198"/>
+        </g>
+        <text x="150" y="160" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">ปิดสนิท</text>
+      </svg>
+      <figcaption>⭐ ภาพ 3 — ก้น (Bottom)</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================== USE CASE 2: MEDIUM ================== -->
+<section class="case medium">
+  <h2>2. ทุเรียนกึ่งแก่ 🥭 (Medium - ตัดได้ แต่ไม่แก่จัด)</h2>
+  <div class="expect">
+    <b>คาดหวังผล:</b> ความแก่ = กึ่งแก่ (medium), ระดับที่ถึง = 1-2<br>
+    <b>คุณลักษณะ:</b> สีเขียวอมเหลือง, ขั้วน้ำตาลที่โคน, หนามเริ่มห่าง, ก้นเริ่มมีร่อง
+  </div>
+  <div class="samples">
+    <!-- STEM (medium) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="m-stem-rod" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#7a9a3e"/>
+            <stop offset="60%" stop-color="#9a7838"/>
+            <stop offset="100%" stop-color="#6a5028"/>
+          </linearGradient>
+          <radialGradient id="m-stem-body" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#b8b85a"/>
+            <stop offset="100%" stop-color="#7a803a"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#f5f3ec"/>
+        <!-- Stem - bicolor green-brown -->
+        <rect x="130" y="40" width="40" height="80" rx="6" fill="url(#m-stem-rod)" stroke="#4a3a1a" stroke-width="2"/>
+        <ellipse cx="150" cy="40" rx="22" ry="6" fill="#7a8a3e" stroke="#4a3a1a" stroke-width="1.5"/>
+        <!-- Cut mark -->
+        <line x1="135" y1="38" x2="165" y2="38" stroke="#6a5018" stroke-width="2"/>
+        <!-- Brown ring at base of stem -->
+        <ellipse cx="150" cy="120" rx="22" ry="5" fill="#7a5a28" stroke="#4a3a1a" stroke-width="1"/>
+        <!-- Body below -->
+        <ellipse cx="150" cy="220" rx="120" ry="90" fill="url(#m-stem-body)" stroke="#4a3a1a" stroke-width="2.5"/>
+        <!-- Spikes - mix of green-yellow-brown -->
+        <g stroke="#4a3a1a" stroke-width="0.8">
+          <polygon points="60,160 50,140 70,148" fill="#7a8a3e"/>
+          <polygon points="80,135 75,115 92,123" fill="#8a8838"/>
+          <polygon points="105,118 105,98 122,108" fill="#9a8a3a"/>
+          <polygon points="135,112 138,92 152,104" fill="#7a8a3e"/>
+          <polygon points="165,112 178,92 168,104" fill="#9a8a3a"/>
+          <polygon points="190,118 195,98 178,108" fill="#7a8a3e"/>
+          <polygon points="215,135 220,115 203,123" fill="#8a7838"/>
+          <polygon points="240,160 250,140 230,148" fill="#7a8a3e"/>
+        </g>
+        <text x="150" y="285" text-anchor="middle" font-size="13" fill="#4a3a1a" font-weight="700">ขั้วเริ่มเปลี่ยนสี โคนน้ำตาล</text>
+      </svg>
+      <figcaption>🌱 ภาพ 1 — ขั้ว (Stem)</figcaption>
+    </figure>
+
+    <!-- BODY (medium) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="m-body-grad" cx="40%" cy="40%" r="65%">
+            <stop offset="0%" stop-color="#c8c068"/>
+            <stop offset="50%" stop-color="#9a9038"/>
+            <stop offset="100%" stop-color="#6a5828"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#f5f3ec"/>
+        <!-- Small stem -->
+        <rect x="138" y="20" width="24" height="22" rx="3" fill="#7a5a28" stroke="#4a3a1a" stroke-width="1.5"/>
+        <!-- Body - yellow-green -->
+        <ellipse cx="150" cy="160" rx="110" ry="115" fill="url(#m-body-grad)" stroke="#4a3a1a" stroke-width="3"/>
+        <!-- Spikes - mixed colors, slightly more spread -->
+        <g stroke="#4a3a1a" stroke-width="0.6">
+          <!-- top row -->
+          <polygon points="100,55 105,38 112,52" fill="#8a8838"/>
+          <polygon points="130,48 135,30 145,46" fill="#9a8a3a"/>
+          <polygon points="160,46 165,28 175,44" fill="#7a7028"/>
+          <polygon points="190,48 195,30 205,46" fill="#9a8a3a"/>
+          <polygon points="220,55 215,38 230,52" fill="#8a7838"/>
+          <!-- second row -->
+          <polygon points="75,95 80,80 92,92" fill="#9a8a3a"/>
+          <polygon points="115,85 120,68 130,83" fill="#7a6028"/>
+          <polygon points="200,85 205,68 215,83" fill="#7a6028"/>
+          <polygon points="240,95 245,80 232,92" fill="#9a8a3a"/>
+          <!-- middle -->
+          <polygon points="55,150 60,128 75,143" fill="#8a7028"/>
+          <polygon points="95,140 100,118 115,135" fill="#9a8a3a"/>
+          <polygon points="195,135 200,113 215,130" fill="#8a7028"/>
+          <polygon points="235,150 240,128 250,145" fill="#9a8a3a"/>
+          <!-- lower -->
+          <polygon points="60,200 65,178 80,193" fill="#7a6028"/>
+          <polygon points="100,220 105,200 118,217" fill="#9a8a3a"/>
+          <polygon points="135,230 140,210 152,225" fill="#8a7838"/>
+          <polygon points="170,230 175,210 185,225" fill="#9a8a3a"/>
+          <polygon points="200,220 205,200 218,217" fill="#7a6028"/>
+          <polygon points="240,200 245,178 225,193" fill="#8a7838"/>
+          <!-- bottom -->
+          <polygon points="115,260 120,243 130,257" fill="#8a7028"/>
+          <polygon points="148,265 153,245 165,262" fill="#9a8a3a"/>
+          <polygon points="180,260 185,243 192,257" fill="#8a7028"/>
+        </g>
+        <!-- Brown blotches indicating partial ripening -->
+        <ellipse cx="115" cy="120" rx="20" ry="12" fill="#7a5a28" opacity="0.45"/>
+        <ellipse cx="185" cy="180" rx="22" ry="10" fill="#7a5a28" opacity="0.4"/>
+      </svg>
+      <figcaption>🥭 ภาพ 2 — เปลือก (Body)</figcaption>
+    </figure>
+
+    <!-- BOTTOM (medium) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="m-bot-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#a89838"/>
+            <stop offset="80%" stop-color="#7a6828"/>
+            <stop offset="100%" stop-color="#5a4818"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#f5f3ec"/>
+        <!-- Bottom circle -->
+        <circle cx="150" cy="150" r="115" fill="url(#m-bot-grad)" stroke="#4a3a1a" stroke-width="3"/>
+        <!-- 5 faint segment lines (just starting) -->
+        <g stroke="#5a4018" stroke-width="2" fill="none" opacity="0.7">
+          <line x1="150" y1="40" x2="150" y2="100"/>
+          <line x1="255" y1="120" x2="200" y2="135"/>
+          <line x1="215" y1="245" x2="180" y2="195"/>
+          <line x1="85" y1="245" x2="120" y2="195"/>
+          <line x1="45" y1="120" x2="100" y2="135"/>
+        </g>
+        <circle cx="150" cy="150" r="5" fill="#5a4018"/>
+        <!-- Spikes around perimeter -->
+        <g stroke="#4a3a1a" stroke-width="0.6">
+          <polygon points="100,55 105,38 115,52" fill="#8a7028"/>
+          <polygon points="135,40 140,22 150,38" fill="#9a8a3a"/>
+          <polygon points="170,40 175,22 185,38" fill="#8a7028"/>
+          <polygon points="200,55 205,38 195,52" fill="#9a8a3a"/>
+          <polygon points="55,100 60,80 75,95" fill="#8a7028"/>
+          <polygon points="232,100 237,80 247,95" fill="#9a8a3a"/>
+          <polygon points="45,150 50,128 65,145" fill="#9a8a3a"/>
+          <polygon points="240,150 245,128 230,145" fill="#8a7028"/>
+          <polygon points="55,200 60,178 75,193" fill="#9a8a3a"/>
+          <polygon points="232,200 237,178 247,193" fill="#8a7028"/>
+          <polygon points="100,245 105,228 115,243" fill="#9a8a3a"/>
+          <polygon points="135,258 140,238 150,253" fill="#8a7028"/>
+          <polygon points="170,258 175,238 185,253" fill="#9a8a3a"/>
+          <polygon points="200,245 205,228 215,243" fill="#8a7028"/>
+        </g>
+      </svg>
+      <figcaption>⭐ ภาพ 3 — ก้น (Bottom)</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================== USE CASE 3: MATURE ================== -->
+<section class="case mature">
+  <h2>3. ทุเรียนแก่ 🟢 (Mature - แก่จัด พร้อมบ่มจน creamy)</h2>
+  <div class="expect">
+    <b>คาดหวังผล:</b> ความแก่ = แก่ (mature), ระดับที่ถึง = 1-2-3 ครบ<br>
+    <b>คุณลักษณะ:</b> สีน้ำตาลเหลือง, ขั้วน้ำตาลแห้ง, หนามห่างปลายน้ำตาล, ก้นมีรอยแยกชัด
+  </div>
+  <div class="samples">
+    <!-- STEM (mature) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="x-stem-rod" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#8a6028"/>
+            <stop offset="50%" stop-color="#6a4818"/>
+            <stop offset="100%" stop-color="#4a3210"/>
+          </linearGradient>
+          <radialGradient id="x-stem-body" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#b88a38"/>
+            <stop offset="100%" stop-color="#7a5828"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#faf3e6"/>
+        <!-- Dry brown stem -->
+        <rect x="130" y="40" width="40" height="80" rx="4" fill="url(#x-stem-rod)" stroke="#3a2a08" stroke-width="2"/>
+        <!-- Dry cut top -->
+        <ellipse cx="150" cy="40" rx="22" ry="6" fill="#5a3818" stroke="#3a2a08" stroke-width="1.5"/>
+        <!-- Crack lines on stem -->
+        <line x1="140" y1="55" x2="142" y2="100" stroke="#2a1a08" stroke-width="1.2"/>
+        <line x1="158" y1="60" x2="160" y2="110" stroke="#2a1a08" stroke-width="1.2"/>
+        <line x1="150" y1="50" x2="150" y2="90" stroke="#2a1a08" stroke-width="1.2"/>
+        <!-- Brown ring at base -->
+        <ellipse cx="150" cy="120" rx="24" ry="6" fill="#4a3010" stroke="#3a2a08" stroke-width="1"/>
+        <!-- Body below - yellow-brown -->
+        <ellipse cx="150" cy="220" rx="120" ry="90" fill="url(#x-stem-body)" stroke="#3a2a08" stroke-width="2.5"/>
+        <!-- Spikes - brown tipped -->
+        <g stroke="#3a2a08" stroke-width="0.8">
+          <polygon points="60,160 50,140 70,148" fill="#7a5828"/>
+          <polygon points="80,135 75,115 92,123" fill="#8a6828"/>
+          <polygon points="105,118 105,98 122,108" fill="#5a3818"/>
+          <polygon points="135,112 138,92 152,104" fill="#7a5828"/>
+          <polygon points="165,112 178,92 168,104" fill="#5a3818"/>
+          <polygon points="190,118 195,98 178,108" fill="#7a5828"/>
+          <polygon points="215,135 220,115 203,123" fill="#8a6828"/>
+          <polygon points="240,160 250,140 230,148" fill="#5a3818"/>
+        </g>
+        <text x="150" y="285" text-anchor="middle" font-size="13" fill="#3a2a08" font-weight="700">ขั้วน้ำตาลแห้ง มีรอยแตก</text>
+      </svg>
+      <figcaption>🌱 ภาพ 1 — ขั้ว (Stem)</figcaption>
+    </figure>
+
+    <!-- BODY (mature) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="x-body-grad" cx="40%" cy="40%" r="65%">
+            <stop offset="0%" stop-color="#d4a878"/>
+            <stop offset="40%" stop-color="#a88838"/>
+            <stop offset="80%" stop-color="#7a5828"/>
+            <stop offset="100%" stop-color="#4a3010"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#faf3e6"/>
+        <!-- Dark stem on top -->
+        <rect x="138" y="20" width="24" height="22" rx="3" fill="#4a3010" stroke="#3a2a08" stroke-width="1.5"/>
+        <!-- Body - yellow-brown -->
+        <ellipse cx="150" cy="160" rx="110" ry="115" fill="url(#x-body-grad)" stroke="#3a2a08" stroke-width="3"/>
+        <!-- Spikes - widely spread, brown tips -->
+        <g stroke="#3a2a08" stroke-width="0.6">
+          <!-- top row (sparser) -->
+          <polygon points="95,55 105,35 115,52" fill="#7a5828"/>
+          <polygon points="135,50 140,28 150,46" fill="#5a3818"/>
+          <polygon points="170,50 175,28 185,46" fill="#5a3818"/>
+          <polygon points="205,55 215,35 200,52" fill="#7a5828"/>
+          <!-- second row -->
+          <polygon points="65,95 75,72 92,90" fill="#5a3818"/>
+          <polygon points="110,82 120,60 132,80" fill="#7a5828"/>
+          <polygon points="170,82 180,60 192,80" fill="#7a5828"/>
+          <polygon points="215,95 225,72 240,90" fill="#5a3818"/>
+          <!-- middle -->
+          <polygon points="48,150 58,125 78,145" fill="#7a5828"/>
+          <polygon points="90,140 100,115 120,135" fill="#5a3818"/>
+          <polygon points="195,135 205,110 222,130" fill="#5a3818"/>
+          <polygon points="240,150 250,125 232,145" fill="#7a5828"/>
+          <!-- lower -->
+          <polygon points="55,200 65,175 85,195" fill="#5a3818"/>
+          <polygon points="100,225 110,200 125,222" fill="#7a5828"/>
+          <polygon points="135,235 140,212 152,228" fill="#5a3818"/>
+          <polygon points="170,235 175,212 185,228" fill="#5a3818"/>
+          <polygon points="200,225 210,200 222,222" fill="#7a5828"/>
+          <polygon points="240,200 250,175 230,195" fill="#5a3818"/>
+          <!-- bottom -->
+          <polygon points="110,262 120,242 132,260" fill="#5a3818"/>
+          <polygon points="148,268 153,245 165,262" fill="#7a5828"/>
+          <polygon points="180,262 185,242 195,258" fill="#5a3818"/>
+        </g>
+        <!-- Brown blotches/cracks -->
+        <ellipse cx="115" cy="130" rx="22" ry="14" fill="#4a3010" opacity="0.5"/>
+        <ellipse cx="190" cy="190" rx="26" ry="12" fill="#4a3010" opacity="0.55"/>
+        <ellipse cx="160" cy="100" rx="18" ry="8" fill="#3a2008" opacity="0.5"/>
+        <!-- Crack line -->
+        <path d="M 120 200 Q 130 220 135 240" stroke="#2a1a08" stroke-width="1.5" fill="none" opacity="0.7"/>
+      </svg>
+      <figcaption>🥭 ภาพ 2 — เปลือก (Body)</figcaption>
+    </figure>
+
+    <!-- BOTTOM (mature) -->
+    <figure>
+      <svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="x-bot-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#c8985a"/>
+            <stop offset="60%" stop-color="#8a6828"/>
+            <stop offset="100%" stop-color="#4a3010"/>
+          </radialGradient>
+        </defs>
+        <rect width="300" height="300" fill="#faf3e6"/>
+        <!-- Bottom circle -->
+        <circle cx="150" cy="150" r="115" fill="url(#x-bot-grad)" stroke="#3a2a08" stroke-width="3"/>
+        <!-- 5 CLEAR segment lines (mature) -->
+        <g stroke="#3a2008" stroke-width="4" fill="none">
+          <line x1="150" y1="40" x2="150" y2="150"/>
+          <line x1="255" y1="115" x2="150" y2="150"/>
+          <line x1="215" y1="250" x2="150" y2="150"/>
+          <line x1="85" y1="250" x2="150" y2="150"/>
+          <line x1="45" y1="115" x2="150" y2="150"/>
+        </g>
+        <!-- Highlight cracks alongside segment lines -->
+        <g stroke="#5a3818" stroke-width="2" fill="none" opacity="0.6">
+          <line x1="148" y1="45" x2="148" y2="148"/>
+          <line x1="152" y1="45" x2="152" y2="148"/>
+        </g>
+        <circle cx="150" cy="150" r="7" fill="#2a1a08"/>
+        <!-- Pulp indication (small visible inside crack) -->
+        <ellipse cx="150" cy="100" rx="3" ry="20" fill="#f0d68a" opacity="0.85"/>
+        <!-- Spikes around perimeter (sparse) -->
+        <g stroke="#3a2a08" stroke-width="0.6">
+          <polygon points="95,55 105,32 115,50" fill="#5a3818"/>
+          <polygon points="135,38 140,18 150,35" fill="#7a5828"/>
+          <polygon points="170,38 175,18 185,35" fill="#5a3818"/>
+          <polygon points="205,55 215,32 195,50" fill="#7a5828"/>
+          <polygon points="50,98 60,75 75,92" fill="#5a3818"/>
+          <polygon points="232,98 242,75 252,92" fill="#7a5828"/>
+          <polygon points="42,150 52,125 68,145" fill="#5a3818"/>
+          <polygon points="240,150 250,125 232,145" fill="#7a5828"/>
+          <polygon points="50,200 60,175 78,195" fill="#7a5828"/>
+          <polygon points="232,200 242,175 252,195" fill="#5a3818"/>
+          <polygon points="95,250 105,228 115,245" fill="#7a5828"/>
+          <polygon points="135,262 140,238 150,253" fill="#5a3818"/>
+          <polygon points="170,262 175,238 185,253" fill="#7a5828"/>
+          <polygon points="200,250 210,228 215,245" fill="#5a3818"/>
+        </g>
+      </svg>
+      <figcaption>⭐ ภาพ 3 — ก้น (Bottom)</figcaption>
+    </figure>
+  </div>
+</section>
+
+<div class="nav">
+  <a href="/">◀ กลับไปแอปตรวจทุเรียน</a>
+</div>
+
+<div style="text-align:center; margin:20px 0; padding:16px; background:#fff8dc; border-radius:10px; font-size:13px; color:#666;">
+  💡 <b>หมายเหตุ:</b> ภาพเหล่านี้เป็น illustration วาดจำลองคุณลักษณะของทุเรียนแต่ละระดับ<br>
+  สำหรับเทสว่าระบบจำแนกถูกหรือไม่ — ของจริงควรใช้ภาพถ่ายทุเรียนจริง
+</div>
+
+</body>
+</html>
